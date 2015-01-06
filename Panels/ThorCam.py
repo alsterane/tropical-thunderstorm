@@ -1,10 +1,10 @@
 __author__ = 'df-setup-basement'
 
-
 from PyQt4 import uic
 from PyQt4.QtGui import *
-import pyqtgraph as pg
-from ThorcamControl import *
+
+from detectors.cameras.thorlabs.communication.ThorcamControl import *
+
 
 class ThorCam(pg.LayoutWidget):
 

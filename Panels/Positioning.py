@@ -1,9 +1,10 @@
 __author__ = 'df-setup-basement'
 
-from pyqtgraph.dockarea import *
 from PyQt4 import uic, QtCore
+
+from pyqtgraph.dockarea import *
 import pyqtgraph as pg
-from MadCityControl import *
+from positioners.piezo.madcitylabs.communication.MadCityControl import *
 
 
 class MadCity(pg.LayoutWidget):
