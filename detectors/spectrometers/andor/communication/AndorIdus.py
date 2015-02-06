@@ -5,50 +5,61 @@ This code is partially based on code from David Baddeley, Hamid Ohadi and Martij
 """
 
 # required modules
-from ctypes import windll, c_int, c_char, byref, c_long, pointer, c_float, c_char_p, cdll
+from ctypes import windll, c_int, c_char, byref, c_long, pointer, c_float, c_char_p, cdll, c_long
+import ctypes
 from PIL import Image
-import sys
+
 import time
 import platform
-import os
+import numpy as np
 
+DLL_PATH = "C:\\Program Files\\Andor SOLIS\\Drivers\\atmcd64d"
 
 class AndorIdus():
     """
-    Provides functions to control Andor Idus camera and spectrograph
-    For extensive documentation and specs see Andor SDK manual
+    Provides functions to control Andor Idus camera and spectrograph. For extensive documentation
+    the reader is referred to the Andor SDK manual.
     """
 
     def __init__(self):
         """
-        Loads and initialises driver
-        :return:
+        Loads and initialises driver.
         """
 
         # load .dll library
         if platform.system() == "Windows":
-            dllname = "C:\\Program Files\\Andor SOLIS\\Drivers\\atmcd64d"
-            self._dll = windll.LoadLibrary(dllname)
+            try:
+                self._dll = windll.LoadLibrary(DLL_PATH)
+            except:
+                raise Exception("Failed to load Andor DLL. Please check specified path.")
 
         # initialise the device
         char_buffer = c_char()
-        error = self._dll.Initialize(byref(char_buffer))
-        print error
-        print "Initialisation resulted in: %s" % (ERROR_CODE[error])
+        err = self._dll.Initialize(byref(char_buffer))
+        if err != 20002:
+            raise Exception("Initialisation resulted in: %s" % (ERROR_CODE[err]))
+        print("Initialisation: %s" % (ERROR_CODE[err]))
 
         # get ccd width and height from detector
         cw = c_int()
         ch = c_int()
         self._dll.GetDetector(byref(cw), byref(ch))
 
+        # get pixel size
+        x_size = c_float()
+        y_size = c_float()
+        self._dll.GetPixelSize(byref(x_size), byref(y_size))
+
         # Initiate parameters
         self._width        = cw.value
         self._height       = ch.value
+        self._pixel_width  = x_size.value
+        self._pixel_height = y_size.value
         self._temperature  = 20.0
         self._set_T        = None
         self._gain         = 1
         self._gainRange    = None
-        self._status       = ERROR_CODE[error]
+        self._status       = ERROR_CODE[err]
         self._verbosity    = True
         self._preampgain   = None
         self._channel      = None
@@ -56,7 +67,7 @@ class AndorIdus():
         self._hsspeed      = None
         self._vsspeed      = None
         self._serial       = None
-        self._exposure     = 1
+        self._exposure     = 0
         self._accumulate   = None
         self._kinetic      = None
         self._bitDepths    = []
@@ -69,10 +80,20 @@ class AndorIdus():
         self._noADChannels = None
         self._noHSSpeeds   = None
         self._ReadMode     = None
+        self._AcquisitionMode = None
 
-    def __del__(self):
-       error = self._dll.ShutDown()
-       print "Shutting down, %s" % (ERROR_CODE[error])
+
+
+    def shutdown(self):
+        """
+        Shutdown spectrometer communication.
+
+        :return: Status code.
+        """
+        err = self._dll.ShutDown()
+        self.status("Shutdown ", err)
+        return err
+
 
 # ---------------------------------------------------------------------------------------------------
 # Camera properties
@@ -83,9 +104,9 @@ class AndorIdus():
         :return: int Serial number of camera
         """
         serial = c_int()
-        error = self._dll.GetCameraSerialNumber(byref(serial))
+        err = self._dll.GetCameraSerialNumber(byref(serial))
         self._serial = serial.value
-        print ("Return serial number, %s" % (ERROR_CODE[error]))
+        self.status("Get serial number", err)
         return self._serial
 
     def get_number_hs_speeds(self):
@@ -114,146 +135,164 @@ class AndorIdus():
 # ---------------------------------------------------------------------------------------------------
     def enable_cooling(self):
         """
-        Switches cooler on
-        :return: status
+        Switches cooling on.
+
+        :return: Status code.
         """
-        error = self._dll.CoolerON()
-        self._Verbose(ERROR_CODE[error])
+        err = self._dll.CoolerON()
+        self.status("Enable cooling", err)
+        return err
 
     def disable_cooling(self):
         """
-        Switches cooler off
-        :return:
+        Switches cooling off.
+
+        :return: Status code.
         """
-        error = self._dll.CoolerOFF()
-        self._Verbose(ERROR_CODE[error])
+        err = self._dll.CoolerOFF()
+        self.status("Disable cooling", err)
+        return err
 
     def set_cooler_mode(self, mode):
         """
-        set the cooler mode
+        Sets the cooler mode.
+
         :param mode: int cooler modus
-        :return:
+        :return: Status code.
         """
-        error = self._dll.SetCoolerMode(mode)
+        err = self._dll.SetCoolerMode(mode)
+        self.status("Setting cooler mode ", err)
+        return err
 
     def is_cooling_enabled(self):
         """
-        returns whether cooler is on or off
-        :return: int cooler status
-        """
-        iCoolerStatus = c_int()
-        error = self._dll.IsCoolerOn(byref(iCoolerStatus))
-        return iCoolerStatus.value
+        Returns whether cooling is enabled or disabled.
 
-    @property
+        :return: int Cooler status.
+        """
+        cooler_status = c_int()
+        err = self._dll.IsCoolerOn(byref(cooler_status))
+        self.status("Checking cooling status ", err)
+        return cooler_status.value
+
     def get_temperature(self):
         """
-        reads out temperature of CCD
-        :return: int temperature in degree Celcius
+        Reads out the temperature of the CCD.
+
+        :return: int Temperature in degree celsius.
         """
         temp = c_int()
-        error = self._dll.GetTemperature(byref(temp))
+        err = self._dll.GetTemperature(byref(temp))
         self._temperature = temp.value
-        print "Temperature is: %g [Set T: %g]" % (self._temperature, self._set_T)
-        return ERROR_CODE[error]
+        #print "Temperature is: %g [Set T: %g]" % (self._temperature, self._set_T)
+        self.status("Checking temperature ", err)
+        return self._temperature
 
     def set_temperature(self, temperature):
         """
-        set temperature of camera
-        :param temperature: int temperature in degree Celcius
-        :return:
+        Sets the temperature of the camera.
+
+        :param temperature: int Temperature in degree celsius.
+        :return: Status code.
         """
         temp = c_int(temperature)
-        error = self._dll.SetTemperature(temp)
+        err = self._dll.SetTemperature(temp)
+        self.status("Setting temperature ", err)
         self._set_T = temperature
+        return err
 
 # ---------------------------------------------------------------------------------------------------
 # Set acquisition parameters
 # ---------------------------------------------------------------------------------------------------
     def set_accumulation_cycle_time(self, time_):
         """
-        set accumulation cycle time
+        Set accumulation cycle time.
         :param time_: int time between two accumulations
-        :return:
+        :return: Status code
         """
-        error = self._dll.SetAccumulationCycleTime(c_float(time_))
+        err = self._dll.SetAccumulationCycleTime(c_float(time_))
+        self.status("Setting accumulation cycle ", err)
+        return err
 
     def set_acquisition_mode(self, mode):
         """
-        Set acquisition mode
+        Set acquisition mode (1 = single scan, 2 = accumulate, 3 = kinetics, 4 = fast kinetics, 5 = run till abort).
         """
-        error = self._dll.SetAcquisitionMode(mode)
+        err = self._dll.SetAcquisitionMode(mode)
+        self.status("Setting acquisition mode ", err)
+        self._AcquisitionMode = mode
+        return err
 
-    def set_AD_channel(self, index):
+    def set_ad_channel(self, index):
         """
-        set the A-D channel for acquisition
-        :param index: int AD channel
-        :return:
+        Set the A-D channel for the acquisition.
+
+        :param index: int AD channel.
+        :return: Status code.
         """
-        error = self._dll.SetADChannel(index)
+        err = self._dll.SetADChannel(index)
         self._channel = index
+        self.status("Setting AD channel ", err)
+        return err
 
-    def SetEMAdvanced(self, gainAdvanced):
-        '''
-        Enable/disable access to the advanced EM gain levels
+    def set_em_advanced(self, gain_advanced):
+        """
+        Enables or disables access to advanced EM gain levels.
 
-        Input:
-            gainAdvanced (int) : 1 or 0 for true or false
+        :param gain_advanced: int 1 or 0 for true or false.
+        :return: Status code.
+        """
+        err = self._dll.SetEMAdvanced(gain_advanced)
+        self.status("Switching EM gain access ", err)
 
-        Output:
-            None
-        '''
-        error = self._dll.SetEMAdvanced(gainAdvanced)
+    def set_emccd_gain_mode(self, gain_mode):
+        """
+        Set the gain mode.
 
-    def SetEMCCDGainMode(self, gainMode):
-        '''
-        Set the gain mode
-
-        Input:
-            gainMode (int) : mode
-
-        Output:
-            None
-        '''
-        error = self._dll.SetEMCCDGainMode(gainMode)
-        #self._Verbose(ERROR_CODE[error] )
+        :param gain_mode: int Gain mode.
+        :return: Status code.
+        """
+        err = self._dll.SetEMCCDGainMode(gain_mode)
+        self.status("Setting EMCCD gain mode ", err)
+        return err
 
     def set_exposure_time(self, time_):
         """
-        Set the exposure time in seconds
+        Set the exposure time in seconds.
+
         :param time_: float, exposure time in seconds
-        :return:
+        :return: Status code.
         """
-        error = self._dll.SetExposureTime(c_float(time_))
+        err = self._dll.SetExposureTime(c_float(time_))
+        self.status("Exposure time ", err)
+        self._exposure = time_
+        return err
 
     def set_frame_transfer_mode(self, frameTransfer):
         """
-        set frame transfer mode
-        :param frameTransfer: int 1, 0, to enable, disable frame transfer mode
-        :return:
+        Enable or disable the frame transfer mode.
+
+        :param frameTransfer: int 1, 0, to enable, disable frame transfer mode.
+        :return: Status code.
         """
-        error = self._dll.SetFrameTransferMode(frameTransfer)
+        err = self._dll.SetFrameTransferMode(frameTransfer)
+        self.status("Frame transfer mode switched ", err)
+        return err
 
     def set_image_rotate(self, iRotate):
         """
         image rotation
         :param iRotate: int 0, 1, 2 for no rotation, 90 deg cw, 90 deg ccw
-        :return:
         """
         error = self._dll.SetImageRotate(iRotate)
 
     def set_kinetic_cycle_time(self, time_):
-        '''
-        Set the Kinetic cycle time in seconds
-
-        Input:
-            time_ (float) : The cycle time in seconds
-
-        Output:
-            None
-        '''
-        error = self._dll.SetKineticCycleTime(c_float(time_))
-        #self._Verbose(ERROR_CODE[error] )
+        """
+        Kinetic cycle time (delay time) in seconds.
+        :param time_: float Cycle time in seconds.
+        """
+        err = self._dll.SetKineticCycleTime(c_float(time_))
+        self.status("Kinetic cycle time changed", err)
 
     def set_number_accumulate(self, number):
         '''
@@ -270,17 +309,13 @@ class AndorIdus():
         #self._Verbose(ERROR_CODE[error] )
 
     def set_number_kinetics(self, numKin):
-        '''
-        Set the number of scans accumulated in memory for kinetic mode
-
-        Input:
-            number (int) : The number of accumulations
-
-        Output:
-            None
-        '''
-        error = self._dll.SetNumberKinetics(numKin)
-        #self._Verbose(ERROR_CODE[error] )
+        """
+        Set number of acquisitions grabbed in memory in kinetic mode.
+        :param numKin: Number of acquisitions grabbed in memory.
+        :return:
+        """
+        err = self._dll.SetNumberKinetics(numKin)
+        self.status("Kinetic acquisition number changed", err)
 
     def set_output_amp(self, index):
         '''
@@ -301,10 +336,10 @@ class AndorIdus():
         set read mode of camera
         :param mode: int 0, 1, 2, 3, 4 for
             full vertical binning, multi-track, random-track, single-track, image
-        :return:
         """
-        error = self._dll.SetReadMode(mode)
+        err = self._dll.SetReadMode(mode)
         self._ReadMode = mode
+        self.status("Read mode changed", err)
 
     def set_trigger_mode(self, mode):
         '''
@@ -325,7 +360,6 @@ class AndorIdus():
         """
         set HS speed to mode corresponding to the index
         :param index: index corresponding to speed mode
-        :return:
         """
         error = self._dll.SetHSSpeed(index)
         self._hsspeed = index
@@ -334,7 +368,6 @@ class AndorIdus():
         """
         set VS speed to mode corresponding to the index
         :param index: index corresponding to speed mode
-        :return:
         """
         error = self._dll.SetVSSpeed(index)
         self._vsspeed = index
@@ -351,28 +384,6 @@ class AndorIdus():
         series = c_long()
         error = self._dll.GetAcquisitionProgress(byref(acc), byref(series))
         return acc.value
-
-    def get_acquired_data(self, img_array):
-       """
-       returns acquired data
-       :param img_array: img_array which stores data
-       :return: array containing acquired data
-       """
-        # FIXME : Check how this works for FVB !!!
-        if self._ReadMode == 0:
-            dim = self._width
-        elif self._ReadMode == 4:
-            dim = self._width * self._height
-            
-        print "Dim is %s" % dim
-        c_img_array = c_int * dim
-        c_img = c_img_array()
-        error = self._dll.GetAcquiredData(pointer(c_img), dim)
-        for i in range(len(c_img)):
-            img_array.append(c_img[i])
-
-        self._imageArray = img_array[:]
-        return self._imageArray
 
     def get_bit_depth(self):
         """
@@ -452,7 +463,16 @@ class AndorIdus():
         """
         status = c_int()
         error = self._dll.GetStatus(byref(status))
-        return self._status
+        return status.value
+
+    def get_readout_time(self):
+        """
+        Returns read out time.
+        :return: readout time in seconds.
+        """
+        rd_time = c_float()
+        error = self._dll.GetReadOutTime(byref(rd_time))
+        return rd_time.value
 
 ###### Single Parameters Get/Set ######
     def GetEMCCDGain(self):
@@ -560,6 +580,13 @@ class AndorIdus():
         """
         error = self._dll.StartAcquisition()
 
+    def wait_for_acquisition(self):
+        """
+        Waits for acquisition, i.e. puts calling thread to sleep.
+        :return:
+        """
+        err = self._dll.WaitForAcquisition()
+
     def set_single_image(self):
         """
         apply settings for single full image scan
@@ -569,7 +596,7 @@ class AndorIdus():
         print "Width: %d Height: %d" % (self._width, self._height)
         self.set_image(1, 1, 1, self._width, 1, self._height)
 
-    def set_single_FVB(self):
+    def set_single_fvb(self):
         """
         apply settings for single scan FVB (full vertical binning) acquisition
         """
@@ -590,9 +617,87 @@ class AndorIdus():
         self._accumulate = accumulate.value
         self._kinetic = kinetic.value
 
+    def get_acquired_data(self, img_array):
+        """
+        returns acquired data
+        :param img_array: img_array which stores data
+        :return: array containing acquired data
+        """
+        # TODO: implement additional read modes
+        if self._ReadMode == 0:     # single scan with FVB
+            dim = self._width
+        elif self._ReadMode == 4:   # full image scan
+            dim = self._width * self._height
+
+        # print "Dim is %s" % dim
+        c_img_array = c_int * dim
+        c_img = c_img_array()
+        err = self._dll.GetAcquiredData(pointer(c_img), dim)
+        for i in range(len(c_img)):
+            img_array.append(c_img[i])
+
+        self._imageArray = img_array[:]
+        return self._imageArray
+
+    def get_fast_data(self):
+        """
+        Gets data at increased rate. (Not really faster as of yet).
+        :return: Array containing acquired data
+        """
+        # print "Dim is %s" % dim
+        c_img_array = c_int * self._width
+        c_img = c_img_array()
+        err = self._dll.GetAcquiredData(byref(c_img), self._width)
+        #for i in range(len(c_img)):
+        #    c_img_array.append(c_img[i])
+        #self._imageArray = img_array[:]
+        return np.array(c_img)
+
+    def get_most_recent_image(self, img_array):
+        """
+        Gets the most recently acquired image.
+        :param img_array: Array to store retrieved the data
+        :return: img_array: Array with retrieved data.
+        """
+        if self._ReadMode == 0:     # single scan with FVB
+            dim = self._width
+        elif self._ReadMode == 4:   # full image scan
+            dim = self._width * self._height
+
+        c_img_array = c_long * dim
+        c_img = c_img_array()
+        err = self._dll.GetMostRecentImage(byref(c_img), dim)
+        for i in range(len(c_img)):
+            img_array.append(c_img[i])
+        return img_array
+
+    def get_oldest_image(self, img_array):
+        """
+        Gets the oldest acquired image which is still in the buffer.
+        :param img_array: Array to store retrieved the data
+        :return: img_array: Array with retrieved data.
+        """
+        if self._ReadMode == 0:     # single scan with FVB
+            dim = self._width
+        elif self._ReadMode == 4:   # full image scan
+            dim = self._width * self._height
+        c_img_array = c_long * dim
+        c_img = c_img_array()
+        err = self._dll.GetOldestImage(byref(c_img), dim)
+        for i in range(len(c_img)):
+            img_array.append(c_img[i])
+        return img_array, err
 # ---------------------------------------------------------------------------------------------------
 # Misc functions
 # ---------------------------------------------------------------------------------------------------
+    def free_internal_memory(self):
+        """
+        Frees the internal memory
+        :return:
+        """
+        error = self._dll.FreeInternalMemory()
+        self.status("Internal memory freed", error)
+
     def set_image(self, hbin, vbin, hstart, hend, vstart, vend):
         """
         specifiy binning and domain of image
@@ -701,7 +806,7 @@ class AndorIdus():
         while self.GetTemperature() is not 'DRV_TEMP_STABILIZED':
             time.sleep(10)
 
-    def setup_FVB(self, gain, exposure):
+    def setup_fvb(self, gain, exposure):
         """
         prepare for full vertical binning acquisition
         :return:
@@ -713,29 +818,31 @@ class AndorIdus():
         self.SetPreAmpGain(PreAmpGain)
         self.SetExposureTime(exposure)
 
-    def capture_FVB(self):
+    def capture_fvb(self):
         """
         capture spectra with full vertical binning
         :return:
         """
         i = 0
-        while i < 4:
-            i += 1
-            #print self.GetTemperature()
-            #print self._temperature
-            print "Ready for Acquisition"
-            self.StartAcquisition()
+        self.start_acquisition()
+        data = []
+        time.sleep(2.0)
+        self.get_acquired_data(data)
+        return data
 
-            # Check for status
-            #while self.GetStatus() is not 'DRV_IDLE':
-            print "Data not yet acquired, waiting 0.5s"
-            print self.GetStatus()
-            time.sleep(0.5)
+    def status(self, action, code):
+        """
+        Writes status updates to command line.
 
-            data = []
-            self.GetAcquiredData(data)
-            self.SaveAsTxt("%03g.txt" % i)
+        :param action: String describing the executed action.
+        :param code: Return code.
+        """
+        if code != 20002:
+            print(action + "returned  with code %s " % (ERROR_CODE[code]))
+        elif self._verbosity:
+            print(action + "completed successfully %s " % (ERROR_CODE[code]))
 # -----------------------------------------------------------------------------------
+
 
 # -----------------------------------------------------------------------------------
 # List of error codes

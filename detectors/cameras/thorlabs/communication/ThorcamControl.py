@@ -11,7 +11,7 @@ import pyqtgraph as pg
 import pyqtgraph.exporters
 
 
-# control MadCityLabs Piezo Stage through Madlib.dll
+#
 class ThorcamControl:
 
     def __init__(self, video_stream, gradient_editor):
