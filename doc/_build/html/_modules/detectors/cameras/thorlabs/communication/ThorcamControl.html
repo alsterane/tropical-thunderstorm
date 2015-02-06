@@ -1,0 +1,214 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>detectors.cameras.thorlabs.communication.ThorcamControl &mdash; Programmable Microscope  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="Programmable Microscope  documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">Programmable Microscope  documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for detectors.cameras.thorlabs.communication.ThorcamControl</h1><div class="highlight"><pre>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;df-setup-basement&#39;</span>
+
+
+<span class="kn">import</span> <span class="nn">MMCorePy</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">QtCore</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">fftpack</span>
+<span class="kn">from</span> <span class="nn">dialogs.SaveImage</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">pyqtgraph</span> <span class="kn">as</span> <span class="nn">pg</span>
+<span class="kn">import</span> <span class="nn">pyqtgraph.exporters</span>
+
+
+<span class="c">#</span>
+<div class="viewcode-block" id="ThorcamControl"><a class="viewcode-back" href="../../../../../detectors.cameras.thorlabs.communication.html#detectors.cameras.thorlabs.communication.ThorcamControl.ThorcamControl">[docs]</a><span class="k">class</span> <span class="nc">ThorcamControl</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">video_stream</span><span class="p">,</span> <span class="n">gradient_editor</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">video_stream</span> <span class="o">=</span> <span class="n">video_stream</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradient_editor</span> <span class="o">=</span> <span class="n">gradient_editor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span> <span class="o">=</span> <span class="n">MMCorePy</span><span class="o">.</span><span class="n">CMMCore</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">loadDevice</span><span class="p">(</span><span class="s">&#39;ThorCam&#39;</span><span class="p">,</span> <span class="s">&#39;ThorlabsUSBCamera&#39;</span><span class="p">,</span> <span class="s">&#39;ThorCam&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">initializeDevice</span><span class="p">(</span><span class="s">&#39;ThorCam&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">setCameraDevice</span><span class="p">(</span><span class="s">&#39;ThorCam&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">setProperty</span><span class="p">(</span><span class="s">&#39;ThorCam&#39;</span><span class="p">,</span> <span class="s">&#39;PixelType&#39;</span><span class="p">,</span> <span class="s">&#39;RGB32bit&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">setProperty</span><span class="p">(</span><span class="s">&#39;ThorCam&#39;</span><span class="p">,</span> <span class="s">&#39;PixelClockMHz&#39;</span><span class="p">,</span> <span class="s">&#39;40&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">setProperty</span><span class="p">(</span><span class="s">&#39;ThorCam&#39;</span><span class="p">,</span> <span class="s">&#39;Exposure&#39;</span><span class="p">,</span> <span class="s">&#39;50&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">setProperty</span><span class="p">(</span><span class="s">&#39;ThorCam&#39;</span><span class="p">,</span> <span class="s">&#39;HardwareGain&#39;</span><span class="p">,</span> <span class="s">&#39;100&#39;</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;Description : &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">getDeviceDescription</span><span class="p">(</span><span class="s">&#39;ThorCam&#39;</span><span class="p">))</span>
+        <span class="k">print</span> <span class="s">&quot;Property names: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">getDevicePropertyNames</span><span class="p">(</span><span class="s">&#39;ThorCam&#39;</span><span class="p">))</span>
+
+        <span class="c"># parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_PSD</span> <span class="o">=</span> <span class="bp">False</span>  <span class="c"># by default don&#39;t take FFT</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_gray</span> <span class="o">=</span> <span class="bp">True</span>  <span class="c"># by default show as gray scale image and not RGB</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="ThorcamControl.binning"><a class="viewcode-back" href="../../../../../detectors.cameras.thorlabs.communication.html#detectors.cameras.thorlabs.communication.ThorcamControl.ThorcamControl.binning">[docs]</a>    <span class="k">def</span> <span class="nf">binning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binning_value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">setProperty</span><span class="p">(</span><span class="s">&#39;ThorCam&#39;</span><span class="p">,</span> <span class="s">&#39;Binning&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">binning_value</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="ThorcamControl.exposure"><a class="viewcode-back" href="../../../../../detectors.cameras.thorlabs.communication.html#detectors.cameras.thorlabs.communication.ThorcamControl.ThorcamControl.exposure">[docs]</a>    <span class="k">def</span> <span class="nf">exposure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp_value</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&quot;adjusting exposure to &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">exp_value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">setProperty</span><span class="p">(</span><span class="s">&#39;ThorCam&#39;</span><span class="p">,</span> <span class="s">&#39;Exposure&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">exp_value</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="ThorcamControl.frames"><a class="viewcode-back" href="../../../../../detectors.cameras.thorlabs.communication.html#detectors.cameras.thorlabs.communication.ThorcamControl.ThorcamControl.frames">[docs]</a>    <span class="k">def</span> <span class="nf">frames</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fps_value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">setProperty</span><span class="p">(</span><span class="s">&#39;ThorCam&#39;</span><span class="p">,</span> <span class="s">&#39;FPS&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">fps_value</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="ThorcamControl.gain"><a class="viewcode-back" href="../../../../../detectors.cameras.thorlabs.communication.html#detectors.cameras.thorlabs.communication.ThorcamControl.ThorcamControl.gain">[docs]</a>    <span class="k">def</span> <span class="nf">gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gain_value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">setProperty</span><span class="p">(</span><span class="s">&#39;ThorCam&#39;</span><span class="p">,</span> <span class="s">&#39;HardwareGain&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">gain_value</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="ThorcamControl.pxclock"><a class="viewcode-back" href="../../../../../detectors.cameras.thorlabs.communication.html#detectors.cameras.thorlabs.communication.ThorcamControl.ThorcamControl.pxclock">[docs]</a>    <span class="k">def</span> <span class="nf">pxclock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clock_value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">setProperty</span><span class="p">(</span><span class="s">&#39;ThorCam&#39;</span><span class="p">,</span> <span class="s">&#39;PixelClockMHz&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">clock_value</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="ThorcamControl.pxtype"><a class="viewcode-back" href="../../../../../detectors.cameras.thorlabs.communication.html#detectors.cameras.thorlabs.communication.ThorcamControl.ThorcamControl.pxtype">[docs]</a>    <span class="k">def</span> <span class="nf">pxtype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pxtype_value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">setProperty</span><span class="p">(</span><span class="s">&#39;ThorCam&#39;</span><span class="p">,</span> <span class="s">&#39;PixelType&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">pxtype_value</span><span class="p">))</span>
+
+    <span class="c"># the update occurs in a separate stream</span></div>
+<div class="viewcode-block" id="ThorcamControl.stream"><a class="viewcode-back" href="../../../../../detectors.cameras.thorlabs.communication.html#detectors.cameras.thorlabs.communication.ThorcamControl.ThorcamControl.stream">[docs]</a>    <span class="k">def</span> <span class="nf">stream</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">getRemainingImageCount</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">popNextImage</span><span class="p">()</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tmp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">4</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span><span class="mi">2</span><span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_PSD</span><span class="p">:</span>  <span class="c"># calculate psd of gray scale image</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmp</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="mi">3</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">fftpack</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">fftpack</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">tmp</span><span class="p">)))</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="p">(</span><span class="mf">255.0</span> <span class="o">/</span> <span class="n">tmp</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmp</span> <span class="o">-</span> <span class="n">tmp</span><span class="o">.</span><span class="n">min</span><span class="p">()))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">video_stream</span><span class="o">.</span><span class="n">setImage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,</span> <span class="n">lut</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gradient_editor</span><span class="o">.</span><span class="n">getLookupTable</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span> <span class="n">levels</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span> <span class="n">autoDownsample</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c"># either plot image in gray or as RGB</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_gray</span><span class="p">:</span>
+                    <span class="n">tmp</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmp</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="mi">3</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="p">(</span><span class="mf">255.0</span> <span class="o">/</span> <span class="n">tmp</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmp</span> <span class="o">-</span> <span class="n">tmp</span><span class="o">.</span><span class="n">min</span><span class="p">()))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">video_stream</span><span class="o">.</span><span class="n">setImage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,</span> <span class="n">lut</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gradient_editor</span><span class="o">.</span><span class="n">getLookupTable</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span> <span class="n">levels</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span> <span class="n">autoDownsample</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">video_stream</span><span class="o">.</span><span class="n">setImage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,</span> <span class="n">lut</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span> <span class="n">autoDownsample</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="c"># start the constant acquisition</span></div>
+<div class="viewcode-block" id="ThorcamControl.run"><a class="viewcode-back" href="../../../../../detectors.cameras.thorlabs.communication.html#detectors.cameras.thorlabs.communication.ThorcamControl.ThorcamControl.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&quot;run viewtimer&quot;</span>
+        <span class="k">global</span> <span class="n">viewtimer</span>
+        <span class="n">viewtimer</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QTimer</span><span class="p">()</span>
+        <span class="n">viewtimer</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="p">)</span>
+        <span class="n">viewtimer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">startContinuousSequenceAcquisition</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c"># stop the constant acquisition</span></div>
+<div class="viewcode-block" id="ThorcamControl.pause"><a class="viewcode-back" href="../../../../../detectors.cameras.thorlabs.communication.html#detectors.cameras.thorlabs.communication.ThorcamControl.ThorcamControl.pause">[docs]</a>    <span class="k">def</span> <span class="nf">pause</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">viewtimer</span><span class="o">.</span><span class="n">isActive</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">stopSequenceAcquisition</span><span class="p">()</span>
+            <span class="n">viewtimer</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="ThorcamControl.snap"><a class="viewcode-back" href="../../../../../detectors.cameras.thorlabs.communication.html#detectors.cameras.thorlabs.communication.ThorcamControl.ThorcamControl.snap">[docs]</a>    <span class="k">def</span> <span class="nf">snap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">snapImage</span><span class="p">()</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmc</span><span class="o">.</span><span class="n">getImage</span><span class="p">()</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tmp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">4</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span><span class="mi">2</span><span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_PSD</span><span class="p">:</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmp</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="mi">3</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">fftpack</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">fftpack</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">tmp</span><span class="p">)))</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="p">(</span><span class="mf">255.0</span> <span class="o">/</span> <span class="n">tmp</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmp</span> <span class="o">-</span> <span class="n">tmp</span><span class="o">.</span><span class="n">min</span><span class="p">()))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">video_stream</span><span class="o">.</span><span class="n">setImage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,</span> <span class="n">lut</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gradient_editor</span><span class="o">.</span><span class="n">getLookupTable</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span> <span class="n">levels</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">255</span><span class="p">),</span> <span class="n">autoDownsample</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># either plot image in gray or as RGB</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_gray</span><span class="p">:</span>
+                    <span class="n">tmp</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmp</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="mi">3</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="p">(</span><span class="mf">255.0</span> <span class="o">/</span> <span class="n">tmp</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmp</span> <span class="o">-</span> <span class="n">tmp</span><span class="o">.</span><span class="n">min</span><span class="p">()))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">video_stream</span><span class="o">.</span><span class="n">setImage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,</span> <span class="n">lut</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gradient_editor</span><span class="o">.</span><span class="n">getLookupTable</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span> <span class="n">levels</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span> <span class="n">autoDownsample</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">video_stream</span><span class="o">.</span><span class="n">setImage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,</span> <span class="n">lut</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span> <span class="n">autoDownsample</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ThorcamControl.store"><a class="viewcode-back" href="../../../../../detectors.cameras.thorlabs.communication.html#detectors.cameras.thorlabs.communication.ThorcamControl.ThorcamControl.store">[docs]</a>    <span class="k">def</span> <span class="nf">store</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">SaveImage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ThorcamControl.toggle_gray_rgb"><a class="viewcode-back" href="../../../../../detectors.cameras.thorlabs.communication.html#detectors.cameras.thorlabs.communication.ThorcamControl.ThorcamControl.toggle_gray_rgb">[docs]</a>    <span class="k">def</span> <span class="nf">toggle_gray_rgb</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_gray</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_gray</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_gray</span> <span class="o">=</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="ThorcamControl.toggle_psd"><a class="viewcode-back" href="../../../../../detectors.cameras.thorlabs.communication.html#detectors.cameras.thorlabs.communication.ThorcamControl.ThorcamControl.toggle_psd">[docs]</a>    <span class="k">def</span> <span class="nf">toggle_psd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_PSD</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_PSD</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_PSD</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">Programmable Microscope  documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, lh.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>detectors.spectrometers.andor.communication.AndorControl &mdash; Programmable Microscope  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="Programmable Microscope  documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">Programmable Microscope  documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for detectors.spectrometers.andor.communication.AndorControl</h1><div class="highlight"><pre>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;df-setup-basement&#39;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">ctypes</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">ctypes</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="c"># control Andor spectrometer+camera through Andor DLL</span>
+<div class="viewcode-block" id="AndorControl"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorControl.AndorControl">[docs]</a><span class="k">class</span> <span class="nc">AndorControl</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    * Readout modes</span>
+<span class="sd">        * Full Vertical Binning (FVB)</span>
+<span class="sd">        * Single Track</span>
+<span class="sd">        * Multi Track</span>
+<span class="sd">        * Random Track</span>
+<span class="sd">        * Image</span>
+<span class="sd">        * Cropped</span>
+
+<span class="sd">    * Acquisition modes</span>
+<span class="sd">        * Single scan</span>
+<span class="sd">        * Accumulate</span>
+<span class="sd">        * Kinetic series</span>
+<span class="sd">        * Run till abort</span>
+<span class="sd">        * Fast kinetics</span>
+
+<span class="sd">            Single acquisition structure:</span>
+<span class="sd">                FVB, single scan, then GetAcquiredData</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># Error codes</span>
+    <span class="n">DRV_SUCCESS</span> <span class="o">=</span> <span class="mi">20002</span>
+    <span class="n">DRV_GENERAL_ERRORS</span> <span class="o">=</span> <span class="mi">20049</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">WinDLL</span><span class="p">(</span><span class="s">&#39;atmcd64d.dll&#39;</span><span class="p">)</span>
+
+        <span class="c"># return number of available cameras</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetAvailableCameras</span> <span class="o">=</span> <span class="n">lib</span><span class="p">[</span><span class="s">&#39;GetAvailableCameras&#39;</span><span class="p">]</span>
+
+        <span class="c"># initialize functions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Initialize</span> <span class="o">=</span> <span class="n">lib</span><span class="p">[</span><span class="s">&#39;Initialize&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">handle</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetDetector</span> <span class="o">=</span> <span class="n">lib</span><span class="p">[</span><span class="s">&#39;GetDetector&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetHardwareVersion</span> <span class="o">=</span> <span class="n">lib</span><span class="p">[</span><span class="s">&#39;GetHardwareVersion&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetNumberVSSpeeds</span> <span class="o">=</span> <span class="n">lib</span><span class="p">[</span><span class="s">&#39;GetNumberVSSpeeds&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetVSSpeed</span> <span class="o">=</span> <span class="n">lib</span><span class="p">[</span><span class="s">&#39;GetVSSpeed&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetSoftwareVersion</span> <span class="o">=</span> <span class="n">lib</span><span class="p">[</span><span class="s">&#39;GetSoftwareVersion&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetNumberHSSpeeds</span> <span class="o">=</span> <span class="n">lib</span><span class="p">[</span><span class="s">&#39;GetNumberHSSpeeds&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetHSSpeed</span> <span class="o">=</span> <span class="n">lib</span><span class="p">[</span><span class="s">&#39;GetHSSpeed&#39;</span><span class="p">]</span>
+        <span class="c">#</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetReadMode</span> <span class="o">=</span> <span class="n">lib</span><span class="p">[</span><span class="s">&#39;SetReadMode&#39;</span><span class="p">]</span>
+
+        <span class="c">#</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetAcquisitionMode</span> <span class="o">=</span> <span class="n">lib</span><span class="p">[</span><span class="s">&#39;SetAcquisitionMode&#39;</span><span class="p">]</span>
+
+        <span class="c">#</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetExposureTime</span> <span class="o">=</span> <span class="n">lib</span><span class="p">[</span><span class="s">&#39;SetExposureTime&#39;</span><span class="p">]</span>
+
+        <span class="c">#</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetAcquiredData</span> <span class="o">=</span> <span class="n">lib</span><span class="p">[</span><span class="s">&#39;GetAcquiredData&#39;</span><span class="p">]</span>
+
+        <span class="k">print</span> <span class="s">&quot;I&#39;m here&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialise_andor</span><span class="p">()</span>
+
+<div class="viewcode-block" id="AndorControl.initialise_andor"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorControl.AndorControl.initialise_andor">[docs]</a>    <span class="k">def</span> <span class="nf">initialise_andor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :type int</span>
+<span class="sd">        :param Integer</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_number_of_cameras</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c">#workingPath = c_byte(0)</span>
+            <span class="n">tekst</span> <span class="o">=</span> <span class="n">c_char</span><span class="p">()</span>
+            <span class="n">working_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">tekst</span><span class="p">)</span>
+            <span class="k">print</span> <span class="n">working_path</span>
+
+            <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Initialize</span><span class="p">(</span><span class="n">working_path</span><span class="p">)</span>
+            <span class="k">print</span> <span class="n">status</span>
+        <span class="n">pcb</span> <span class="o">=</span> <span class="n">c_uint</span><span class="p">()</span>
+        <span class="n">decode</span> <span class="o">=</span> <span class="n">c_uint</span><span class="p">()</span>
+        <span class="n">dummy1</span> <span class="o">=</span> <span class="n">c_uint</span><span class="p">()</span>
+        <span class="n">dummy2</span> <span class="o">=</span> <span class="n">c_uint</span><span class="p">()</span>
+        <span class="n">firmware_version</span> <span class="o">=</span> <span class="n">c_uint</span><span class="p">()</span>
+        <span class="n">firmware_build</span> <span class="o">=</span> <span class="n">c_uint</span><span class="p">()</span>
+
+        <span class="c">#status = self.GetHardwareVersion(byref(pcb), byref(decode), byref(dummy1), byref(dummy2),</span>
+                                     <span class="c"># byref(firmware_version), byref(firmware_build))</span>
+        <span class="c">#if(status == self.DRV_SUCCESS):</span>
+        <span class="c">#     print pcb.value</span>
+</div>
+<div class="viewcode-block" id="AndorControl.get_number_of_cameras"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorControl.AndorControl.get_number_of_cameras">[docs]</a>    <span class="k">def</span> <span class="nf">get_number_of_cameras</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># check for number of cameras</span>
+        <span class="n">num_cams</span> <span class="o">=</span> <span class="n">c_long</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetAvailableCameras</span><span class="p">(</span><span class="n">byref</span><span class="p">(</span><span class="n">num_cams</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">num_cams</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">status</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">DRV_SUCCESS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;No cameras found.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">status</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">DRV_GENERAL_ERRORS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Could not verify number of cameras.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">num_cams</span><span class="o">.</span><span class="n">value</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">Programmable Microscope  documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, lh.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

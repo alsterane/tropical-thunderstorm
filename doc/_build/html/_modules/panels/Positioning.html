@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>panels.Positioning &mdash; Programmable Microscope  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Programmable Microscope  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Programmable Microscope  documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for panels.Positioning</h1><div class="highlight"><pre>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;df-setup-basement&#39;</span>
+
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">uic</span><span class="p">,</span> <span class="n">QtCore</span>
+
+<span class="kn">from</span> <span class="nn">pyqtgraph.dockarea</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">pyqtgraph</span> <span class="kn">as</span> <span class="nn">pg</span>
+<span class="kn">from</span> <span class="nn">positioners.MadCityControl</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="MadCity"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity">[docs]</a><span class="k">class</span> <span class="nc">MadCity</span><span class="p">(</span><span class="n">pg</span><span class="o">.</span><span class="n">LayoutWidget</span><span class="p">):</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MadCity</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span> <span class="o">=</span> <span class="n">uic</span><span class="o">.</span><span class="n">loadUi</span><span class="p">(</span><span class="s">&quot;./panels/UiForms/PositioningUI.ui&quot;</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+        <span class="c"># MadCity - Initialisation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stage_handle</span> <span class="o">=</span> <span class="n">MadCityControl</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_init</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_madcity</span><span class="p">)</span>
+
+        <span class="c"># MadCity - Parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">madcity_step</span> <span class="o">=</span> <span class="mi">100</span> <span class="c">#in nm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_np_steps</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">madcity_step</span><span class="p">))</span>
+        <span class="c"># self.connect(self.ui.t_np_steps, QtCore.SIGNAL(), self.update_steps)</span>
+
+        <span class="c"># MadCity - Steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_np_step1</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_b_np_step1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_np_step2</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_b_np_step2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_np_step3</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_b_np_step3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_np_step4</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_b_np_step4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_np_step5</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_b_np_step5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_np_step6</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_b_np_step6</span><span class="p">)</span>
+
+        <span class="c"># MadCity - Movement</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stage_handle</span> <span class="o">=</span> <span class="n">MadCityControl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_np_n</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mv_b_np_n</span><span class="p">)</span>
+
+        <span class="c"># Lock/unlock references</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkBox_ref</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock_refs</span><span class="p">)</span>
+
+    <span class="c"># INIT MAD CITY STAGE</span>
+<div class="viewcode-block" id="MadCity.init_madcity"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity.init_madcity">[docs]</a>    <span class="k">def</span> <span class="nf">init_madcity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stage_handle</span><span class="o">.</span><span class="n">initialise_stage</span><span class="p">()</span>
+        <span class="k">print</span> <span class="s">&quot;Initialise MadCityLabs stage&quot;</span>
+
+    <span class="c"># STEPS BUTTONS FOR MAD CITY STAGE</span></div>
+<div class="viewcode-block" id="MadCity.set_b_np_step1"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity.set_b_np_step1">[docs]</a>    <span class="k">def</span> <span class="nf">set_b_np_step1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_np_steps</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="mi">50</span><span class="p">))</span></div>
+<div class="viewcode-block" id="MadCity.set_b_np_step2"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity.set_b_np_step2">[docs]</a>    <span class="k">def</span> <span class="nf">set_b_np_step2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_np_steps</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span></div>
+<div class="viewcode-block" id="MadCity.set_b_np_step3"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity.set_b_np_step3">[docs]</a>    <span class="k">def</span> <span class="nf">set_b_np_step3</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_np_steps</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="mi">200</span><span class="p">))</span></div>
+<div class="viewcode-block" id="MadCity.set_b_np_step4"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity.set_b_np_step4">[docs]</a>    <span class="k">def</span> <span class="nf">set_b_np_step4</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_np_steps</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="mi">500</span><span class="p">))</span></div>
+<div class="viewcode-block" id="MadCity.set_b_np_step5"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity.set_b_np_step5">[docs]</a>    <span class="k">def</span> <span class="nf">set_b_np_step5</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_np_steps</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="mi">1000</span><span class="p">))</span></div>
+<div class="viewcode-block" id="MadCity.set_b_np_step6"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity.set_b_np_step6">[docs]</a>    <span class="k">def</span> <span class="nf">set_b_np_step6</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_np_steps</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="mi">2000</span><span class="p">))</span>
+
+    <span class="c"># MOVEMENT OF MAD CITY STAGE</span></div>
+<div class="viewcode-block" id="MadCity.mv_b_np_n"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity.mv_b_np_n">[docs]</a>    <span class="k">def</span> <span class="nf">mv_b_np_n</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_np_steps</span><span class="o">.</span><span class="n">displayText</span><span class="p">())</span>
+        <span class="c">#self.stage_handle.move_stage()</span></div>
+<div class="viewcode-block" id="MadCity.mv_b_np_ne"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity.mv_b_np_ne">[docs]</a>    <span class="k">def</span> <span class="nf">mv_b_np_ne</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_np_steps</span><span class="o">.</span><span class="n">displayText</span><span class="p">())</span></div>
+<div class="viewcode-block" id="MadCity.mv_b_np_e"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity.mv_b_np_e">[docs]</a>    <span class="k">def</span> <span class="nf">mv_b_np_e</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_np_steps</span><span class="o">.</span><span class="n">displayText</span><span class="p">())</span></div>
+<div class="viewcode-block" id="MadCity.mv_b_np_se"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity.mv_b_np_se">[docs]</a>    <span class="k">def</span> <span class="nf">mv_b_np_se</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_np_steps</span><span class="o">.</span><span class="n">displayText</span><span class="p">())</span></div>
+<div class="viewcode-block" id="MadCity.mv_b_np_s"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity.mv_b_np_s">[docs]</a>    <span class="k">def</span> <span class="nf">mv_b_np_s</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_np_steps</span><span class="o">.</span><span class="n">displayText</span><span class="p">())</span></div>
+<div class="viewcode-block" id="MadCity.mv_b_np_sw"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity.mv_b_np_sw">[docs]</a>    <span class="k">def</span> <span class="nf">mv_b_np_sw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_np_steps</span><span class="o">.</span><span class="n">displayText</span><span class="p">())</span></div>
+<div class="viewcode-block" id="MadCity.mv_b_np_w"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity.mv_b_np_w">[docs]</a>    <span class="k">def</span> <span class="nf">mv_b_np_w</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_np_steps</span><span class="o">.</span><span class="n">displayText</span><span class="p">())</span></div>
+<div class="viewcode-block" id="MadCity.mv_b_np_nw"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity.mv_b_np_nw">[docs]</a>    <span class="k">def</span> <span class="nf">mv_b_np_nw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_np_steps</span><span class="o">.</span><span class="n">displayText</span><span class="p">())</span>
+
+    <span class="c"># UNLOCK/LOCK REFERENCES</span>
+</div>
+<div class="viewcode-block" id="MadCity.lock_refs"><a class="viewcode-back" href="../../panels.html#panels.Positioning.MadCity.lock_refs">[docs]</a>    <span class="k">def</span> <span class="nf">lock_refs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkBox_ref</span><span class="o">.</span><span class="n">isChecked</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b_sample_ref</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b_obj1_z_ref</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b_obj2_z_ref</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b_obj2_xy_ref</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b_sample_ref</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b_obj1_z_ref</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b_obj2_z_ref</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b_obj2_xy_ref</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Programmable Microscope  documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, lh.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

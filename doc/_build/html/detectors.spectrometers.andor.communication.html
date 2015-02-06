@@ -1,0 +1,1591 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>detectors.spectrometers.andor.communication package &mdash; Programmable Microscope  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Programmable Microscope  documentation" href="index.html" />
+    <link rel="up" title="detectors.spectrometers.andor package" href="detectors.spectrometers.andor.html" />
+    <link rel="next" title="dialogs package" href="dialogs.html" />
+    <link rel="prev" title="detectors.spectrometers.andor package" href="detectors.spectrometers.andor.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dialogs.html" title="dialogs package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="detectors.spectrometers.andor.html" title="detectors.spectrometers.andor package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Programmable Microscope  documentation</a> &raquo;</li>
+          <li><a href="detectors.html" >detectors package</a> &raquo;</li>
+          <li><a href="detectors.spectrometers.html" >detectors.spectrometers package</a> &raquo;</li>
+          <li><a href="detectors.spectrometers.andor.html" accesskey="U">detectors.spectrometers.andor package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="detectors-spectrometers-andor-communication-package">
+<h1>detectors.spectrometers.andor.communication package<a class="headerlink" href="#detectors-spectrometers-andor-communication-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-detectors.spectrometers.andor.communication.AndorControl">
+<span id="detectors-spectrometers-andor-communication-andorcontrol-module"></span><h2>detectors.spectrometers.andor.communication.AndorControl module<a class="headerlink" href="#module-detectors.spectrometers.andor.communication.AndorControl" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="detectors.spectrometers.andor.communication.AndorControl.AndorControl">
+<em class="property">class </em><tt class="descclassname">detectors.spectrometers.andor.communication.AndorControl.</tt><tt class="descname">AndorControl</tt><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorControl.html#AndorControl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorControl.AndorControl" title="Permalink to this definition">¶</a></dt>
+<dd><ul>
+<li><dl class="first docutils">
+<dt>Readout modes</dt>
+<dd><ul class="first last simple">
+<li>Full Vertical Binning (FVB)</li>
+<li>Single Track</li>
+<li>Multi Track</li>
+<li>Random Track</li>
+<li>Image</li>
+<li>Cropped</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Acquisition modes</dt>
+<dd><ul class="first last">
+<li><p class="first">Single scan</p>
+</li>
+<li><p class="first">Accumulate</p>
+</li>
+<li><p class="first">Kinetic series</p>
+</li>
+<li><p class="first">Run till abort</p>
+</li>
+<li><p class="first">Fast kinetics</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>Single acquisition structure:</dt>
+<dd><p class="first last">FVB, single scan, then GetAcquiredData</p>
+</dd>
+</dl>
+</div></blockquote>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="attribute">
+<dt id="detectors.spectrometers.andor.communication.AndorControl.AndorControl.DRV_GENERAL_ERRORS">
+<tt class="descname">DRV_GENERAL_ERRORS</tt><em class="property"> = 20049</em><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorControl.AndorControl.DRV_GENERAL_ERRORS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="detectors.spectrometers.andor.communication.AndorControl.AndorControl.DRV_SUCCESS">
+<tt class="descname">DRV_SUCCESS</tt><em class="property"> = 20002</em><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorControl.AndorControl.DRV_SUCCESS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorControl.AndorControl.get_number_of_cameras">
+<tt class="descname">get_number_of_cameras</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorControl.html#AndorControl.get_number_of_cameras"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorControl.AndorControl.get_number_of_cameras" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorControl.AndorControl.initialise_andor">
+<tt class="descname">initialise_andor</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorControl.html#AndorControl.initialise_andor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorControl.AndorControl.initialise_andor" title="Permalink to this definition">¶</a></dt>
+<dd><p>:type int
+:param Integer
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="detectors-spectrometers-andor-communication-andorcontrol2-module">
+<h2>detectors.spectrometers.andor.communication.AndorControl2 module<a class="headerlink" href="#detectors-spectrometers-andor-communication-andorcontrol2-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-detectors.spectrometers.andor.communication.AndorIdus">
+<span id="detectors-spectrometers-andor-communication-andoridus-module"></span><h2>detectors.spectrometers.andor.communication.AndorIdus module<a class="headerlink" href="#module-detectors.spectrometers.andor.communication.AndorIdus" title="Permalink to this headline">¶</a></h2>
+<p>Module to control Andor idus camera and Shamrock 303i spectrograph</p>
+<p>This code is based on code from David Baddeley, Hamid Ohadi and Martijn Schaafsma</p>
+<dl class="class">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus">
+<em class="property">class </em><tt class="descclassname">detectors.spectrometers.andor.communication.AndorIdus.</tt><tt class="descname">AndorIdus</tt><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides functions to control Andor Idus camera and spectrograph
+For extensive documentation and specs see Andor SDK manual</p>
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.GetEMCCDGain">
+<tt class="descname">GetEMCCDGain</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.GetEMCCDGain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.GetEMCCDGain" title="Permalink to this definition">¶</a></dt>
+<dd><p>get gain
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.GetHSSpeed">
+<tt class="descname">GetHSSpeed</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.GetHSSpeed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.GetHSSpeed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the available HS speeds of the selected channel</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>(float[]) : The speeds of the selected channel</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.GetSeriesProgress">
+<tt class="descname">GetSeriesProgress</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.GetSeriesProgress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.GetSeriesProgress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of completed kenetic scans</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>(int) : The number of completed kinetic scans</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.GetVSSpeed">
+<tt class="descname">GetVSSpeed</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.GetVSSpeed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.GetVSSpeed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the available VS speeds of the selected channel</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>(float[]) : The speeds of the selected channel</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.SetEMCCDGain">
+<tt class="descname">SetEMCCDGain</tt><big>(</big><em>gain</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.SetEMCCDGain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.SetEMCCDGain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the EMCCD Gain setting</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>gain (int) : EMCCD setting</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.abort_acquisition">
+<tt class="descname">abort_acquisition</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.abort_acquisition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.abort_acquisition" title="Permalink to this definition">¶</a></dt>
+<dd><p>aborts current acquisition
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.capture_fvb">
+<tt class="descname">capture_fvb</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.capture_fvb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.capture_fvb" title="Permalink to this definition">¶</a></dt>
+<dd><p>capture spectra with full vertical binning
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.cool_down">
+<tt class="descname">cool_down</tt><big>(</big><em>temperature</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.cool_down"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.cool_down" title="Permalink to this definition">¶</a></dt>
+<dd><p>cool down camera to specified temperature
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.disable_cooling">
+<tt class="descname">disable_cooling</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.disable_cooling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.disable_cooling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Switches cooling off.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Status code.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.enable_cooling">
+<tt class="descname">enable_cooling</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.enable_cooling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.enable_cooling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Switches cooling on.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Status code.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_EM_gain_range">
+<tt class="descname">get_EM_gain_range</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.get_EM_gain_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_EM_gain_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns gain range
+:return: int gain range</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_accumulation_progress">
+<tt class="descname">get_accumulation_progress</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.get_accumulation_progress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_accumulation_progress" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns progress of accummulation
+:return: int number of completed accumulations</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_acquired_data">
+<tt class="descname">get_acquired_data</tt><big>(</big><em>img_array</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.get_acquired_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_acquired_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns acquired data
+:param img_array: img_array which stores data
+:return: array containing acquired data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_acquisition_timings">
+<tt class="descname">get_acquisition_timings</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.get_acquisition_timings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_acquisition_timings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Acquire all the relevant timings for acquisition,
+and store them in local memory
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_bit_depth">
+<tt class="descname">get_bit_depth</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.get_bit_depth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_bit_depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns bit depth of available channels
+:return: int bit depths</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_camera_serial_number">
+<tt class="descname">get_camera_serial_number</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.get_camera_serial_number"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_camera_serial_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns serial number of camera
+:return: int Serial number of camera</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_most_recent_image">
+<tt class="descname">get_most_recent_image</tt><big>(</big><em>img_array</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.get_most_recent_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_most_recent_image" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_num_AD_channels">
+<tt class="descname">get_num_AD_channels</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.get_num_AD_channels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_num_AD_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns number of AD channels
+:return: int number of AD channels</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_num_preamp_gains">
+<tt class="descname">get_num_preamp_gains</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.get_num_preamp_gains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_num_preamp_gains" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns the number of Pre Amp Gains
+:return: int number of pre amp gains</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_number_hs_speeds">
+<tt class="descname">get_number_hs_speeds</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.get_number_hs_speeds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_number_hs_speeds" title="Permalink to this definition">¶</a></dt>
+<dd><p>get number of HS speeds
+:return: int number of HS speeds</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_number_vs_speeds">
+<tt class="descname">get_number_vs_speeds</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.get_number_vs_speeds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_number_vs_speeds" title="Permalink to this definition">¶</a></dt>
+<dd><p>get number of VS speeds
+:return: int number of VS speeds</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_preamp_gain">
+<tt class="descname">get_preamp_gain</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.get_preamp_gain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_preamp_gain" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns available pre amp gain
+:return: float preamp gain</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_status">
+<tt class="descname">get_status</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.get_status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns status of camera
+:param: none
+:return: camera status (String)</p>
+<blockquote>
+<div>DRV_IDLE
+RV_TEMPCYCLE
+DRV_ACQUIRING
+DRV_TIME_NOT_MET
+DRV_KINETIC_TIME_NOT_MET
+DRV_ERROR_ACK
+DRV_ACQ_BUFFER
+DRV_SPOOLERROR</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_temperature">
+<tt class="descname">get_temperature</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.get_temperature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.get_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads out the temperature of the CCD.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">int Temperature in degree celsius.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.is_cooling_enabled">
+<tt class="descname">is_cooling_enabled</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.is_cooling_enabled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.is_cooling_enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether cooling is enabled or disabled.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">int Cooler status.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.save_as_bmp">
+<tt class="descname">save_as_bmp</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.save_as_bmp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.save_as_bmp" title="Permalink to this definition">¶</a></dt>
+<dd><p>saves most recent acquired image as bmp
+:param path: string path
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.save_as_normalized_bmp">
+<tt class="descname">save_as_normalized_bmp</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.save_as_normalized_bmp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.save_as_normalized_bmp" title="Permalink to this definition">¶</a></dt>
+<dd><p>save most recent image as bmp file in specified path, but with maximized contrast
+:param path: string path where to save
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.save_as_txt">
+<tt class="descname">save_as_txt</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.save_as_txt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.save_as_txt" title="Permalink to this definition">¶</a></dt>
+<dd><p>save most recent image as txt file in specified path
+:param path: string path where to save
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_accumulation_cycle_time">
+<tt class="descname">set_accumulation_cycle_time</tt><big>(</big><em>time_</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_accumulation_cycle_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_accumulation_cycle_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set accumulation cycle time.
+:param <a href="#id1"><span class="problematic" id="id2">time_</span></a>: int time between two accumulations
+:return: Status code</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_acquisition_mode">
+<tt class="descname">set_acquisition_mode</tt><big>(</big><em>mode</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_acquisition_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_acquisition_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set acquisition mode (1 = single scan, 2 = accumulate, 3 = kinetics, 4 = fast kinetics, 5 = run till abort).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_ad_channel">
+<tt class="descname">set_ad_channel</tt><big>(</big><em>index</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_ad_channel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_ad_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the A-D channel for the acquisition.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>index</strong> &#8211; int AD channel.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Status code.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_cooler_mode">
+<tt class="descname">set_cooler_mode</tt><big>(</big><em>mode</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_cooler_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_cooler_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the cooler mode.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mode</strong> &#8211; int cooler modus</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Status code.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_em_advanced">
+<tt class="descname">set_em_advanced</tt><big>(</big><em>gain_advanced</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_em_advanced"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_em_advanced" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables or disables access to advanced EM gain levels.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>gain_advanced</strong> &#8211; int 1 or 0 for true or false.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Status code.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_emccd_gain_mode">
+<tt class="descname">set_emccd_gain_mode</tt><big>(</big><em>gain_mode</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_emccd_gain_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_emccd_gain_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the gain mode.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>gain_mode</strong> &#8211; int Gain mode.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Status code.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_exposure_time">
+<tt class="descname">set_exposure_time</tt><big>(</big><em>time_</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_exposure_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_exposure_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the exposure time in seconds.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>time</strong> &#8211; float, exposure time in seconds</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Status code.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_frame_transfer_mode">
+<tt class="descname">set_frame_transfer_mode</tt><big>(</big><em>frameTransfer</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_frame_transfer_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_frame_transfer_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable or disable the frame transfer mode.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>frameTransfer</strong> &#8211; int 1, 0, to enable, disable frame transfer mode.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Status code.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_hs_speed">
+<tt class="descname">set_hs_speed</tt><big>(</big><em>index</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_hs_speed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_hs_speed" title="Permalink to this definition">¶</a></dt>
+<dd><p>set HS speed to mode corresponding to the index
+:param index: index corresponding to speed mode
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_image">
+<tt class="descname">set_image</tt><big>(</big><em>hbin</em>, <em>vbin</em>, <em>hstart</em>, <em>hend</em>, <em>vstart</em>, <em>vend</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>specifiy binning and domain of image
+:param hbin: int horizontal binning
+:param vbin: int vertical binning
+:param hstart: horizontal starting point
+:param hend: horizontal end point
+:param vstart: vertical starting point
+:param vend: vertical end point
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_image_rotate">
+<tt class="descname">set_image_rotate</tt><big>(</big><em>iRotate</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_image_rotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_image_rotate" title="Permalink to this definition">¶</a></dt>
+<dd><p>image rotation
+:param iRotate: int 0, 1, 2 for no rotation, 90 deg cw, 90 deg ccw
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_kinetic_cycle_time">
+<tt class="descname">set_kinetic_cycle_time</tt><big>(</big><em>time_</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_kinetic_cycle_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_kinetic_cycle_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the Kinetic cycle time in seconds</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><a href="#id3"><span class="problematic" id="id4">time_</span></a> (float) : The cycle time in seconds</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_number_accumulate">
+<tt class="descname">set_number_accumulate</tt><big>(</big><em>number</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_number_accumulate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_number_accumulate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the number of scans accumulated in memory,
+for kinetic and accumulate modes</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>number (int) : The number of accumulations</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_number_kinetics">
+<tt class="descname">set_number_kinetics</tt><big>(</big><em>numKin</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_number_kinetics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_number_kinetics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the number of scans accumulated in memory for kinetic mode</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>number (int) : The number of accumulations</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_output_amp">
+<tt class="descname">set_output_amp</tt><big>(</big><em>index</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_output_amp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_output_amp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify which amplifier to use if EMCCD is enabled</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>index (int) : 0 for EMCCD, 1 for conventional</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_preamp_gain">
+<tt class="descname">set_preamp_gain</tt><big>(</big><em>index</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_preamp_gain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_preamp_gain" title="Permalink to this definition">¶</a></dt>
+<dd><p>set pre amp gain to mode corresponding to index
+:param index: int index, corresponding to gain mode
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_read_mode">
+<tt class="descname">set_read_mode</tt><big>(</big><em>mode</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_read_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_read_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>set read mode of camera
+:param mode: int 0, 1, 2, 3, 4 for</p>
+<blockquote>
+<div>full vertical binning, multi-track, random-track, single-track, image</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_shutter">
+<tt class="descname">set_shutter</tt><big>(</big><em>typ</em>, <em>mode</em>, <em>closingtime</em>, <em>openingtime</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_shutter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_shutter" title="Permalink to this definition">¶</a></dt>
+<dd><p>set shutter configuration
+:param typ: int 0, 1: TTL low/high
+:param mode: int 0, 1, 2: auto, open, close
+:param closingtime: int ms it takes to close
+:param openingtime: int ms it takes to open
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_shutter_ext">
+<tt class="descname">set_shutter_ext</tt><big>(</big><em>typ</em>, <em>mode</em>, <em>closingtime</em>, <em>openingtime</em>, <em>extmode</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_shutter_ext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_shutter_ext" title="Permalink to this definition">¶</a></dt>
+<dd><p>conifgure shutter in external mode
+:param typ: int 0,1 : TTL low/high to open shutter
+:param mode: int 0,1,2 : auto, open, close
+:param closingtime: int ms shutter takes to close
+:param openingtime: int ms shutter takes to open
+:param extmode: int 0, 1, 2 : auto, open, close
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_single_fvb">
+<tt class="descname">set_single_fvb</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_single_fvb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_single_fvb" title="Permalink to this definition">¶</a></dt>
+<dd><p>apply settings for single scan FVB (full vertical binning) acquisition</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_single_image">
+<tt class="descname">set_single_image</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_single_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_single_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>apply settings for single full image scan</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_spool">
+<tt class="descname">set_spool</tt><big>(</big><em>active</em>, <em>method</em>, <em>path</em>, <em>framebuffersize</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_spool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_spool" title="Permalink to this definition">¶</a></dt>
+<dd><p>set spooling
+:param active:
+:param method:
+:param path:
+:param framebuffersize:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_temperature">
+<tt class="descname">set_temperature</tt><big>(</big><em>temperature</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_temperature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the temperature of the camera.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>temperature</strong> &#8211; int Temperature in degree celsius.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Status code.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_trigger_mode">
+<tt class="descname">set_trigger_mode</tt><big>(</big><em>mode</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_trigger_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_trigger_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the trigger mode</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><dl class="first last docutils">
+<dt>mode (int) <span class="classifier-delimiter">:</span> <span class="classifier">0 Internal</span></dt>
+<dd>1 External
+2 External Start (only in Fast Kinetics mode)</dd>
+</dl>
+</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_vs_speed">
+<tt class="descname">set_vs_speed</tt><big>(</big><em>index</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.set_vs_speed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.set_vs_speed" title="Permalink to this definition">¶</a></dt>
+<dd><p>set VS speed to mode corresponding to the index
+:param index: index corresponding to speed mode
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.setup_fvb">
+<tt class="descname">setup_fvb</tt><big>(</big><em>gain</em>, <em>exposure</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.setup_fvb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.setup_fvb" title="Permalink to this definition">¶</a></dt>
+<dd><p>prepare for full vertical binning acquisition
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.shutdown">
+<tt class="descname">shutdown</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.shutdown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.shutdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>shuts down camera
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.start_acquisition">
+<tt class="descname">start_acquisition</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.start_acquisition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.start_acquisition" title="Permalink to this definition">¶</a></dt>
+<dd><p>starts acquisition
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.status">
+<tt class="descname">status</tt><big>(</big><em>action</em>, <em>code</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdus.html#AndorIdus.status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdus.AndorIdus.status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes status updates to command line.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>action</strong> &#8211; String describing the executed action.</li>
+<li><strong>code</strong> &#8211; Return code.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-detectors.spectrometers.andor.communication.AndorIdusOriginal">
+<span id="detectors-spectrometers-andor-communication-andoridusoriginal-module"></span><h2>detectors.spectrometers.andor.communication.AndorIdusOriginal module<a class="headerlink" href="#module-detectors.spectrometers.andor.communication.AndorIdusOriginal" title="Permalink to this headline">¶</a></h2>
+<p>Module to control Andor idus camera and Shamrock 303i spectrograph</p>
+<dl class="class">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus">
+<em class="property">class </em><tt class="descclassname">detectors.spectrometers.andor.communication.AndorIdusOriginal.</tt><tt class="descname">AndorIdus</tt><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides functions to control Andor Idus camera and spectrograph
+For extensive documentation and specs see Andor SDK manual</p>
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.AbortAcquisition">
+<tt class="descname">AbortAcquisition</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.AbortAcquisition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.AbortAcquisition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abort the acquisition</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.CoolerOFF">
+<tt class="descname">CoolerOFF</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.CoolerOFF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.CoolerOFF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Switches cooler off
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.CoolerON">
+<tt class="descname">CoolerON</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.CoolerON"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.CoolerON" title="Permalink to this definition">¶</a></dt>
+<dd><p>Switches cooler on
+:return: status</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.Demo_CoolDown">
+<tt class="descname">Demo_CoolDown</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.Demo_CoolDown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.Demo_CoolDown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cool down the camera for a demo measurement</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.Demo_FVBCapture">
+<tt class="descname">Demo_FVBCapture</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.Demo_FVBCapture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.Demo_FVBCapture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the demo image measurement</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.Demo_FVBPrepare">
+<tt class="descname">Demo_FVBPrepare</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.Demo_FVBPrepare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.Demo_FVBPrepare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare the camera for a demo image measurement</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.Demo_ImageCapture">
+<tt class="descname">Demo_ImageCapture</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.Demo_ImageCapture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.Demo_ImageCapture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the demo image measurement</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.Demo_ImagePrepare">
+<tt class="descname">Demo_ImagePrepare</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.Demo_ImagePrepare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.Demo_ImagePrepare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare the camera for a demo image measurement</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.FILE">
+<tt class="descname">FILE</tt><big>(</big><em>back=0</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.FILE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.FILE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return filename of source code</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><dl class="first last docutils">
+<dt>back (int) <span class="classifier-delimiter">:</span> <span class="classifier">The number of positions to move</span></dt>
+<dd>up in the calling stack (default=0)</dd>
+</dl>
+</dd>
+<dt>Output:</dt>
+<dd>(string)     : The requested information</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.FUNC">
+<tt class="descname">FUNC</tt><big>(</big><em>back=0</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.FUNC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.FUNC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return function name</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><dl class="first last docutils">
+<dt>back (int) <span class="classifier-delimiter">:</span> <span class="classifier">The number of positions to move</span></dt>
+<dd>up in the calling stack (default=0)</dd>
+</dl>
+</dd>
+<dt>Output:</dt>
+<dd>(string)     : The requested information</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetAccumulationProgress">
+<tt class="descname">GetAccumulationProgress</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetAccumulationProgress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetAccumulationProgress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of completed accumulations</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>(int) : The number of accumulations</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetAcquiredData">
+<tt class="descname">GetAcquiredData</tt><big>(</big><em>imageArray</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetAcquiredData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetAcquiredData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the Acquired data</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>(array) : an array containing the acquired data</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetAcquisitionTimings">
+<tt class="descname">GetAcquisitionTimings</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetAcquisitionTimings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetAcquisitionTimings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Acquire all the relevant timings for acquisition,
+and store them in local memory</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetBitDepth">
+<tt class="descname">GetBitDepth</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetBitDepth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetBitDepth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the bit depth of the available channels</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>(int[]) : The bit depths</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetCameraSerialNumber">
+<tt class="descname">GetCameraSerialNumber</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetCameraSerialNumber"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetCameraSerialNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns serial number of camera
+:return: Serial number of camera</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetEMCCDGain">
+<tt class="descname">GetEMCCDGain</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetEMCCDGain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetEMCCDGain" title="Permalink to this definition">¶</a></dt>
+<dd><p>get gain
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetEMGainRange">
+<tt class="descname">GetEMGainRange</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetEMGainRange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetEMGainRange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of completed accumulations</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>int) : The number of accumulations</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetHSSpeed">
+<tt class="descname">GetHSSpeed</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetHSSpeed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetHSSpeed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the available HS speeds of the selected channel</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>(float[]) : The speeds of the selected channel</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetNumberADChannels">
+<tt class="descname">GetNumberADChannels</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetNumberADChannels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetNumberADChannels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of AD channels</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>(int) : The number of AD channels</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetNumberHSSpeeds">
+<tt class="descname">GetNumberHSSpeeds</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetNumberHSSpeeds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetNumberHSSpeeds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of HS speeds</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>(int) : the number of HS speeds</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetNumberPreAmpGains">
+<tt class="descname">GetNumberPreAmpGains</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetNumberPreAmpGains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetNumberPreAmpGains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of Pre Amp Gains</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>(int) : The number of Pre Amp Gains</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetNumberVSSpeeds">
+<tt class="descname">GetNumberVSSpeeds</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetNumberVSSpeeds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetNumberVSSpeeds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of VS speeds</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>(int) : the number of VS speeds</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetPreAmpGain">
+<tt class="descname">GetPreAmpGain</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetPreAmpGain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetPreAmpGain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the available Pre Amp Gains</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>(float[]) : The pre amp gains</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetSeriesProgress">
+<tt class="descname">GetSeriesProgress</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetSeriesProgress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetSeriesProgress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of completed kenetic scans</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>(int) : The number of completed kinetic scans</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetStatus">
+<tt class="descname">GetStatus</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetStatus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetStatus" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns status of camera
+:param: none
+:return: camera status (String)</p>
+<blockquote>
+<div>DRV_IDLE
+RV_TEMPCYCLE
+DRV_ACQUIRING
+DRV_TIME_NOT_MET
+DRV_KINETIC_TIME_NOT_MET
+DRV_ERROR_ACK
+DRV_ACQ_BUFFER
+DRV_SPOOLERROR</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetTemperature">
+<tt class="descname">GetTemperature</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetTemperature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetTemperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the temperature in degrees Celcius</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>(int) : temperature in degrees Celcius</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetVSSpeed">
+<tt class="descname">GetVSSpeed</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.GetVSSpeed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetVSSpeed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the available VS speeds of the selected channel</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>(float[]) : The speeds of the selected channel</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.IsCoolerOn">
+<tt class="descname">IsCoolerOn</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.IsCoolerOn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.IsCoolerOn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns cooler status</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>None</dd>
+<dt>Output:</dt>
+<dd>(int) : Cooler status</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.LINE">
+<tt class="descname">LINE</tt><big>(</big><em>back=0</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.LINE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.LINE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return line of statement in code</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><dl class="first last docutils">
+<dt>back (int) <span class="classifier-delimiter">:</span> <span class="classifier">The number of positions to move</span></dt>
+<dd>up in the calling stack (default=0)</dd>
+</dl>
+</dd>
+<dt>Output:</dt>
+<dd>(string)     : The requested information</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SaveAsBmp">
+<tt class="descname">SaveAsBmp</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SaveAsBmp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SaveAsBmp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the most recent acquired image as a bitmap</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>path (string) : Filename to save to</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SaveAsBmpNormalised">
+<tt class="descname">SaveAsBmpNormalised</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SaveAsBmpNormalised"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SaveAsBmpNormalised" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the most recent acquired image as a bitmap,
+but maximize contrast</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>path (string) : Filename to save to</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SaveAsFITS">
+<tt class="descname">SaveAsFITS</tt><big>(</big><em>filename</em>, <em>type_</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SaveAsFITS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SaveAsFITS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the most recent acquired image as FITS</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>path (string) : Filename to save to</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SaveAsTxt">
+<tt class="descname">SaveAsTxt</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SaveAsTxt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SaveAsTxt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the most recent acquired image as txt</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>path (string) : Filename to save to</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetADChannel">
+<tt class="descname">SetADChannel</tt><big>(</big><em>index</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetADChannel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetADChannel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the A-D channel for acquisition</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>index (int) : AD channel</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetAccumulationCycleTime">
+<tt class="descname">SetAccumulationCycleTime</tt><big>(</big><em>time_</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetAccumulationCycleTime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetAccumulationCycleTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the accumulation cycle time</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><a href="#id5"><span class="problematic" id="id6">time_</span></a> (float) : the accumulation cycle time in seconds</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetAcquisitionMode">
+<tt class="descname">SetAcquisitionMode</tt><big>(</big><em>mode</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetAcquisitionMode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetAcquisitionMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set acquisition mode</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetCoolerMode">
+<tt class="descname">SetCoolerMode</tt><big>(</big><em>mode</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetCoolerMode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetCoolerMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the cooler mode</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>mode (int) : cooler modus</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetEMAdvanced">
+<tt class="descname">SetEMAdvanced</tt><big>(</big><em>gainAdvanced</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetEMAdvanced"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetEMAdvanced" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable/disable access to the advanced EM gain levels</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>gainAdvanced (int) : 1 or 0 for true or false</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetEMCCDGain">
+<tt class="descname">SetEMCCDGain</tt><big>(</big><em>gain</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetEMCCDGain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetEMCCDGain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the EMCCD Gain setting</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>gain (int) : EMCCD setting</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetEMCCDGainMode">
+<tt class="descname">SetEMCCDGainMode</tt><big>(</big><em>gainMode</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetEMCCDGainMode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetEMCCDGainMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the gain mode</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>gainMode (int) : mode</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetExposureTime">
+<tt class="descname">SetExposureTime</tt><big>(</big><em>time_</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetExposureTime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetExposureTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the exposure time in seconds</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><a href="#id7"><span class="problematic" id="id8">time_</span></a> (float) : The exposure time in seconds</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetFrameTransferMode">
+<tt class="descname">SetFrameTransferMode</tt><big>(</big><em>frameTransfer</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetFrameTransferMode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetFrameTransferMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable/disable the frame transfer mode</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>frameTransfer (int) : 1 or 0 for true or false</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetHSSpeed">
+<tt class="descname">SetHSSpeed</tt><big>(</big><em>index</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetHSSpeed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetHSSpeed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the HS speed to the mode corresponding to the index</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>index (int) : index corresponding to the Speed mode</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetImage">
+<tt class="descname">SetImage</tt><big>(</big><em>hbin</em>, <em>vbin</em>, <em>hstart</em>, <em>hend</em>, <em>vstart</em>, <em>vend</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify the binning and domain of the image</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>hbin   (int) : horizontal binning
+vbin   (int) : vertical binning
+hstart (int) : horizontal starting point
+hend   (int) : horizontal end point
+vstart (int) : vertical starting point
+vend   (int) : vertical end point</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetImageRotate">
+<tt class="descname">SetImageRotate</tt><big>(</big><em>iRotate</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetImageRotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetImageRotate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the modus for image rotation</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>iRotate (int) : 0 for no rotation, 1 for 90 deg cw, 2 for 90 deg ccw</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetKineticCycleTime">
+<tt class="descname">SetKineticCycleTime</tt><big>(</big><em>time_</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetKineticCycleTime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetKineticCycleTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the Kinetic cycle time in seconds</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><a href="#id9"><span class="problematic" id="id10">time_</span></a> (float) : The cycle time in seconds</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetNumberAccumulations">
+<tt class="descname">SetNumberAccumulations</tt><big>(</big><em>number</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetNumberAccumulations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetNumberAccumulations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the number of scans accumulated in memory,
+for kinetic and accumulate modes</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>number (int) : The number of accumulations</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetNumberKinetics">
+<tt class="descname">SetNumberKinetics</tt><big>(</big><em>numKin</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetNumberKinetics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetNumberKinetics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the number of scans accumulated in memory for kinetic mode</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>number (int) : The number of accumulations</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetOutputAmplifier">
+<tt class="descname">SetOutputAmplifier</tt><big>(</big><em>index</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetOutputAmplifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetOutputAmplifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify which amplifier to use if EMCCD is enabled</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>index (int) : 0 for EMCCD, 1 for conventional</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetPreAmpGain">
+<tt class="descname">SetPreAmpGain</tt><big>(</big><em>index</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetPreAmpGain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetPreAmpGain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the Pre Amp Gain to the mode corresponding to the index</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>index (int) : index corresponding to the Gain mode</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetReadMode">
+<tt class="descname">SetReadMode</tt><big>(</big><em>mode</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetReadMode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetReadMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the read mode of the camera</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><dl class="first last docutils">
+<dt>mode (int) <span class="classifier-delimiter">:</span> <span class="classifier">0 Full Vertical Binning</span></dt>
+<dd>1 Multi-Track
+2 Random-track
+3 Single-Track
+4 Image</dd>
+</dl>
+</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetShutter">
+<tt class="descname">SetShutter</tt><big>(</big><em>typ</em>, <em>mode</em>, <em>closingtime</em>, <em>openingtime</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetShutter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetShutter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the configuration for the shutter</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>typ         (int) : 0/1 Output TTL low/high signal to open shutter
+mode        (int) : 0/1/2 For Auto/Open/Close
+closingtime (int) : millisecs it takes to close
+openingtime (int) : millisecs it takes to open</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetShutterEx">
+<tt class="descname">SetShutterEx</tt><big>(</big><em>typ</em>, <em>mode</em>, <em>closingtime</em>, <em>openingtime</em>, <em>extmode</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetShutterEx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetShutterEx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the configuration for the shutter in external mode</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>typ         (int) : 0/1 Output TTL low/high signal to open shutter
+mode        (int) : 0/1/2 For Auto/Open/Close
+closingtime (int) : millisecs it takes to close
+openingtime (int) : millisecs it takes to open
+extmode     (int) : 0/1/2 For Auto/Open/Close</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetSingleFVB">
+<tt class="descname">SetSingleFVB</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetSingleFVB"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetSingleFVB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shortcut to apply settings for a single scan FVB</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetSingleImage">
+<tt class="descname">SetSingleImage</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetSingleImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetSingleImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shortcut to apply settings for a single scan full image</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetSpool">
+<tt class="descname">SetSpool</tt><big>(</big><em>active</em>, <em>method</em>, <em>path</em>, <em>framebuffersize</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetSpool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetSpool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set Spooling. Refer to manual for detailed description</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetTemperature">
+<tt class="descname">SetTemperature</tt><big>(</big><em>temperature</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetTemperature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetTemperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the working temperature of the camera</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>temparature (int) : temperature in degrees Celcius</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetTriggerMode">
+<tt class="descname">SetTriggerMode</tt><big>(</big><em>mode</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetTriggerMode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetTriggerMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the trigger mode</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><dl class="first last docutils">
+<dt>mode (int) <span class="classifier-delimiter">:</span> <span class="classifier">0 Internal</span></dt>
+<dd>1 External
+2 External Start (only in Fast Kinetics mode)</dd>
+</dl>
+</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetVSSpeed">
+<tt class="descname">SetVSSpeed</tt><big>(</big><em>index</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.SetVSSpeed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetVSSpeed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the VS speed to the mode corresponding to the index</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>index (int) : index corresponding to the Speed mode</dd>
+<dt>Output:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.ShutDown">
+<tt class="descname">ShutDown</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.ShutDown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.ShutDown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shut down the Andor</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.StartAcquisition">
+<tt class="descname">StartAcquisition</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.StartAcquisition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.StartAcquisition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the acquisition</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.WHERE">
+<tt class="descname">WHERE</tt><big>(</big><em>back=0</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorIdusOriginal.html#AndorIdus.WHERE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.WHERE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return information of location of calling function</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><dl class="first last docutils">
+<dt>back (int) <span class="classifier-delimiter">:</span> <span class="classifier">The number of positions to move</span></dt>
+<dd>up in the calling stack (default=0)</dd>
+</dl>
+</dd>
+<dt>Output:</dt>
+<dd>(string)     : The requested information</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-detectors.spectrometers.andor.communication.AndorTest">
+<span id="detectors-spectrometers-andor-communication-andortest-module"></span><h2>detectors.spectrometers.andor.communication.AndorTest module<a class="headerlink" href="#module-detectors.spectrometers.andor.communication.AndorTest" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-detectors.spectrometers.andor.communication.AndorTest2">
+<span id="detectors-spectrometers-andor-communication-andortest2-module"></span><h2>detectors.spectrometers.andor.communication.AndorTest2 module<a class="headerlink" href="#module-detectors.spectrometers.andor.communication.AndorTest2" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="detectors.spectrometers.andor.communication.AndorTest2.SpectraDisplay">
+<em class="property">class </em><tt class="descclassname">detectors.spectrometers.andor.communication.AndorTest2.</tt><tt class="descname">SpectraDisplay</tt><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorTest2.html#SpectraDisplay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorTest2.SpectraDisplay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">pyqtgraph.widgets.LayoutWidget.LayoutWidget</span></tt></p>
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorTest2.SpectraDisplay.live_stream">
+<tt class="descname">live_stream</tt><big>(</big><em>cycle_time</em><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorTest2.html#SpectraDisplay.live_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorTest2.SpectraDisplay.live_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start a &#8216;Run till abort&#8217; acquisition and constantly update spectra display.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cycle_time</strong> &#8211; int Minimal time between two acquisitions.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorTest2.SpectraDisplay.pause">
+<tt class="descname">pause</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorTest2.html#SpectraDisplay.pause"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorTest2.SpectraDisplay.pause" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pauses the currently ongoing &#8216;Run till abort&#8217;-acquisition.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="detectors.spectrometers.andor.communication.AndorTest2.SpectraDisplay.stream">
+<tt class="descname">stream</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorTest2.html#SpectraDisplay.stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorTest2.SpectraDisplay.stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch data and send to plot.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="detectors.spectrometers.andor.communication.AndorTest2.main">
+<tt class="descclassname">detectors.spectrometers.andor.communication.AndorTest2.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/detectors/spectrometers/andor/communication/AndorTest2.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#detectors.spectrometers.andor.communication.AndorTest2.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-detectors.spectrometers.andor.communication">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-detectors.spectrometers.andor.communication" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">detectors.spectrometers.andor.communication package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-detectors.spectrometers.andor.communication.AndorControl">detectors.spectrometers.andor.communication.AndorControl module</a></li>
+<li><a class="reference internal" href="#detectors-spectrometers-andor-communication-andorcontrol2-module">detectors.spectrometers.andor.communication.AndorControl2 module</a></li>
+<li><a class="reference internal" href="#module-detectors.spectrometers.andor.communication.AndorIdus">detectors.spectrometers.andor.communication.AndorIdus module</a></li>
+<li><a class="reference internal" href="#module-detectors.spectrometers.andor.communication.AndorIdusOriginal">detectors.spectrometers.andor.communication.AndorIdusOriginal module</a></li>
+<li><a class="reference internal" href="#module-detectors.spectrometers.andor.communication.AndorTest">detectors.spectrometers.andor.communication.AndorTest module</a></li>
+<li><a class="reference internal" href="#module-detectors.spectrometers.andor.communication.AndorTest2">detectors.spectrometers.andor.communication.AndorTest2 module</a></li>
+<li><a class="reference internal" href="#module-detectors.spectrometers.andor.communication">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="detectors.spectrometers.andor.html"
+                        title="previous chapter">detectors.spectrometers.andor package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="dialogs.html"
+                        title="next chapter">dialogs package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/detectors.spectrometers.andor.communication.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dialogs.html" title="dialogs package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="detectors.spectrometers.andor.html" title="detectors.spectrometers.andor package"
+             >previous</a> |</li>
+        <li><a href="index.html">Programmable Microscope  documentation</a> &raquo;</li>
+          <li><a href="detectors.html" >detectors package</a> &raquo;</li>
+          <li><a href="detectors.spectrometers.html" >detectors.spectrometers package</a> &raquo;</li>
+          <li><a href="detectors.spectrometers.andor.html" >detectors.spectrometers.andor package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, lh.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>detectors.cameras.thorlabs.communication.ThorcamTest &mdash; Programmable Microscope  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="Programmable Microscope  documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">Programmable Microscope  documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for detectors.cameras.thorlabs.communication.ThorcamTest</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Demonstrates very basic use of ImageItem to display image data inside a ViewBox.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c">## Add path to library (just for examples; you do not need this)</span>
+
+<span class="kn">from</span> <span class="nn">pyqtgraph.Qt</span> <span class="kn">import</span> <span class="n">QtCore</span><span class="p">,</span> <span class="n">QtGui</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pyqtgraph</span> <span class="kn">as</span> <span class="nn">pg</span>
+<span class="kn">import</span> <span class="nn">pyqtgraph.ptime</span> <span class="kn">as</span> <span class="nn">ptime</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QApplication</span><span class="p">([])</span>
+
+<span class="c">## Create window with GraphicsView widget</span>
+<span class="n">win</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">GraphicsLayoutWidget</span><span class="p">()</span>
+<span class="n">win</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>  <span class="c">## show widget alone in its own window</span>
+<span class="n">win</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="s">&#39;pyqtgraph example: ImageItem&#39;</span><span class="p">)</span>
+<span class="n">view</span> <span class="o">=</span> <span class="n">win</span><span class="o">.</span><span class="n">addViewBox</span><span class="p">()</span>
+
+<span class="c">## lock the aspect ratio so pixels are always square</span>
+<span class="n">view</span><span class="o">.</span><span class="n">setAspectLocked</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c">## Create image item</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ImageItem</span><span class="p">(</span><span class="n">border</span><span class="o">=</span><span class="s">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">view</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+
+<span class="c">## Set initial view bounds</span>
+<span class="n">view</span><span class="o">.</span><span class="n">setRange</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">600</span><span class="p">))</span>
+
+<span class="c">## Create random image</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">loc</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">updateTime</span> <span class="o">=</span> <span class="n">ptime</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">fps</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="updateData"><a class="viewcode-back" href="../../../../../detectors.cameras.thorlabs.communication.html#detectors.cameras.thorlabs.communication.ThorcamTest.updateData">[docs]</a><span class="k">def</span> <span class="nf">updateData</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">img</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">updateTime</span><span class="p">,</span> <span class="n">fps</span>
+
+    <span class="c">## Display the data</span>
+    <span class="n">img</span><span class="o">.</span><span class="n">setImage</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">print</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">QtCore</span><span class="o">.</span><span class="n">QTimer</span><span class="o">.</span><span class="n">singleShot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">updateData</span><span class="p">)</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">ptime</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">fps2</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">now</span><span class="o">-</span><span class="n">updateTime</span><span class="p">)</span>
+    <span class="n">updateTime</span> <span class="o">=</span> <span class="n">now</span>
+    <span class="n">fps</span> <span class="o">=</span> <span class="n">fps</span> <span class="o">*</span> <span class="mf">0.9</span> <span class="o">+</span> <span class="n">fps2</span> <span class="o">*</span> <span class="mf">0.1</span>
+    
+    <span class="k">print</span> <span class="s">&quot;</span><span class="si">%0.1f</span><span class="s"> fps&quot;</span> <span class="o">%</span> <span class="n">fps</span>
+    
+</div>
+<span class="n">updateData</span><span class="p">()</span>
+
+<span class="c">## Start Qt event loop unless running in interactive mode.</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">sys</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">interactive</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">QtCore</span><span class="p">,</span> <span class="s">&#39;PYQT_VERSION&#39;</span><span class="p">):</span>
+        <span class="n">QtGui</span><span class="o">.</span><span class="n">QApplication</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">Programmable Microscope  documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, lh.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

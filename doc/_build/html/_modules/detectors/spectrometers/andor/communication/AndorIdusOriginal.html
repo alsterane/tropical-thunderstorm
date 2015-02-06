@@ -1,0 +1,1120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>detectors.spectrometers.andor.communication.AndorIdusOriginal &mdash; Programmable Microscope  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="Programmable Microscope  documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">Programmable Microscope  documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for detectors.spectrometers.andor.communication.AndorIdusOriginal</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module to control Andor idus camera and Shamrock 303i spectrograph</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># required modules</span>
+<span class="kn">from</span> <span class="nn">ctypes</span> <span class="kn">import</span> <span class="n">windll</span><span class="p">,</span> <span class="n">c_int</span><span class="p">,</span> <span class="n">c_char</span><span class="p">,</span> <span class="n">byref</span><span class="p">,</span> <span class="n">c_long</span><span class="p">,</span> <span class="n">pointer</span><span class="p">,</span> <span class="n">c_float</span><span class="p">,</span> <span class="n">c_char_p</span><span class="p">,</span> <span class="n">cdll</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+
+<div class="viewcode-block" id="AndorIdus"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus">[docs]</a><span class="k">class</span> <span class="nc">AndorIdus</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provides functions to control Andor Idus camera and spectrograph</span>
+<span class="sd">    For extensive documentation and specs see Andor SDK manual</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads and initialises driver</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c"># Check operating system and load library</span>
+        <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s">&quot;Windows&quot;</span><span class="p">:</span>
+            <span class="n">dllname</span> <span class="o">=</span> <span class="s">&quot;C:</span><span class="se">\\</span><span class="s">Program Files</span><span class="se">\\</span><span class="s">Andor SOLIS</span><span class="se">\\</span><span class="s">Drivers</span><span class="se">\\</span><span class="s">atmcd64d&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span> <span class="o">=</span> <span class="n">windll</span><span class="o">.</span><span class="n">LoadLibrary</span><span class="p">(</span><span class="n">dllname</span><span class="p">)</span>
+
+        <span class="c"># Initialize the device</span>
+        <span class="n">char_buffer</span> <span class="o">=</span> <span class="n">c_char</span><span class="p">()</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">Initialize</span><span class="p">(</span><span class="n">byref</span><span class="p">(</span><span class="n">char_buffer</span><span class="p">))</span>
+        <span class="k">print</span> <span class="n">error</span>
+        <span class="k">print</span> <span class="s">&quot;Initialisation resulted in: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ERROR_CODE</span><span class="p">[</span><span class="n">error</span><span class="p">])</span>
+
+        <span class="n">cw</span> <span class="o">=</span> <span class="n">c_int</span><span class="p">()</span>
+        <span class="n">ch</span> <span class="o">=</span> <span class="n">c_int</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetDetector</span><span class="p">(</span><span class="n">byref</span><span class="p">(</span><span class="n">cw</span><span class="p">),</span> <span class="n">byref</span><span class="p">(</span><span class="n">ch</span><span class="p">))</span>
+
+        <span class="c"># Initiate parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_width</span>        <span class="o">=</span> <span class="n">cw</span><span class="o">.</span><span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_height</span>       <span class="o">=</span> <span class="n">ch</span><span class="o">.</span><span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_temperature</span>  <span class="o">=</span> <span class="mf">20.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_T</span>        <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gain</span>         <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gainRange</span>    <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span>       <span class="o">=</span> <span class="n">ERROR_CODE</span><span class="p">[</span><span class="n">error</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_verbosity</span>    <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_preampgain</span>   <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_channel</span>      <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outamp</span>       <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hsspeed</span>      <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vsspeed</span>      <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serial</span>       <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exposure</span>     <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_accumulate</span>   <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kinetic</span>      <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bitDepths</span>    <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_preAmpGain</span>   <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_VSSpeeds</span>     <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_noGains</span>      <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_imageArray</span>   <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_noVSSpeeds</span>   <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_HSSpeeds</span>     <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_noADChannels</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_noHSSpeeds</span>   <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ReadMode</span>     <span class="o">=</span> <span class="bp">None</span>
+
+
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+       <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">ShutDown</span><span class="p">()</span>
+       <span class="k">print</span> <span class="s">&quot;Shutting down, </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ERROR_CODE</span><span class="p">[</span><span class="n">error</span><span class="p">])</span>
+
+<div class="viewcode-block" id="AndorIdus.LINE"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.LINE">[docs]</a>    <span class="k">def</span> <span class="nf">LINE</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">back</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Return line of statement in code</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            back (int)   : The number of positions to move</span>
+<span class="sd">                           up in the calling stack (default=0)</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (string)     : The requested information</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">(</span> <span class="n">back</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">)</span><span class="o">.</span><span class="n">f_lineno</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.FILE"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.FILE">[docs]</a>    <span class="k">def</span> <span class="nf">FILE</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">back</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Return filename of source code</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            back (int)   : The number of positions to move</span>
+<span class="sd">                           up in the calling stack (default=0)</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (string)     : The requested information</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">(</span> <span class="n">back</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">)</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_filename</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.FUNC"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.FUNC">[docs]</a>    <span class="k">def</span> <span class="nf">FUNC</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">back</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Return function name</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            back (int)   : The number of positions to move</span>
+<span class="sd">                           up in the calling stack (default=0)</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (string)     : The requested information</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">(</span> <span class="n">back</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">)</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.WHERE"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.WHERE">[docs]</a>    <span class="k">def</span> <span class="nf">WHERE</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">back</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Return information of location of calling function</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            back (int)   : The number of positions to move</span>
+<span class="sd">                           up in the calling stack (default=0)</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (string)     : The requested information</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">(</span> <span class="n">back</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">()&quot;</span> <span class="o">%</span> <span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span> <span class="n">frame</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_filename</span> <span class="p">),</span>
+                                <span class="n">frame</span><span class="o">.</span><span class="n">f_lineno</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span> <span class="p">)</span>
+
+<span class="c"># Get Camera properties</span></div>
+<div class="viewcode-block" id="AndorIdus.GetCameraSerialNumber"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetCameraSerialNumber">[docs]</a>    <span class="k">def</span> <span class="nf">GetCameraSerialNumber</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns serial number of camera</span>
+<span class="sd">        :return: Serial number of camera</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">serial</span> <span class="o">=</span> <span class="n">c_int</span><span class="p">()</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetCameraSerialNumber</span><span class="p">(</span><span class="n">byref</span><span class="p">(</span><span class="n">serial</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serial</span> <span class="o">=</span> <span class="n">serial</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">print</span> <span class="p">(</span><span class="s">&quot;Return serial number, </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ERROR_CODE</span><span class="p">[</span><span class="n">error</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serial</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.GetNumberHSSpeeds"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetNumberHSSpeeds">[docs]</a>    <span class="k">def</span> <span class="nf">GetNumberHSSpeeds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the number of HS speeds</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (int) : the number of HS speeds</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">noHSSpeeds</span> <span class="o">=</span> <span class="n">c_int</span><span class="p">()</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetNumberHSSpeeds</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_channel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outamp</span><span class="p">,</span>
+                                            <span class="n">byref</span><span class="p">(</span><span class="n">noHSSpeeds</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_noHSSpeeds</span> <span class="o">=</span> <span class="n">noHSSpeeds</span><span class="o">.</span><span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Verbose</span><span class="p">(</span><span class="n">ERROR_CODE</span><span class="p">[</span><span class="n">error</span><span class="p">]</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_noHSSpeeds</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.GetNumberVSSpeeds"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetNumberVSSpeeds">[docs]</a>    <span class="k">def</span> <span class="nf">GetNumberVSSpeeds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the number of VS speeds</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (int) : the number of VS speeds</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">noVSSpeeds</span> <span class="o">=</span> <span class="n">c_int</span><span class="p">()</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetNumberVSSpeeds</span><span class="p">(</span><span class="n">byref</span><span class="p">(</span><span class="n">noVSSpeeds</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_noVSSpeeds</span> <span class="o">=</span> <span class="n">noVSSpeeds</span><span class="o">.</span><span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Verbose</span><span class="p">(</span><span class="n">ERROR_CODE</span><span class="p">[</span><span class="n">error</span><span class="p">]</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_noVSSpeeds</span>
+
+<span class="c"># Cooler and temperature</span></div>
+<div class="viewcode-block" id="AndorIdus.CoolerON"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.CoolerON">[docs]</a>    <span class="k">def</span> <span class="nf">CoolerON</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Switches cooler on</span>
+<span class="sd">        :return: status</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">CoolerON</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Verbose</span><span class="p">(</span><span class="n">ERROR_CODE</span><span class="p">[</span><span class="n">error</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.CoolerOFF"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.CoolerOFF">[docs]</a>    <span class="k">def</span> <span class="nf">CoolerOFF</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Switches cooler off</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">CoolerOFF</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Verbose</span><span class="p">(</span><span class="n">ERROR_CODE</span><span class="p">[</span><span class="n">error</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetCoolerMode"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetCoolerMode">[docs]</a>    <span class="k">def</span> <span class="nf">SetCoolerMode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the cooler mode</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            mode (int) : cooler modus</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetCoolerMode</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Verbose</span><span class="p">(</span><span class="n">ERROR_CODE</span><span class="p">[</span><span class="n">error</span><span class="p">]</span> <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.IsCoolerOn"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.IsCoolerOn">[docs]</a>    <span class="k">def</span> <span class="nf">IsCoolerOn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns cooler status</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (int) : Cooler status</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">iCoolerStatus</span> <span class="o">=</span> <span class="n">c_int</span><span class="p">()</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">IsCoolerOn</span><span class="p">(</span><span class="n">byref</span><span class="p">(</span><span class="n">iCoolerStatus</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Verbose</span><span class="p">(</span><span class="n">ERROR_CODE</span><span class="p">[</span><span class="n">error</span><span class="p">]</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="n">iCoolerStatus</span><span class="o">.</span><span class="n">value</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.GetTemperature"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetTemperature">[docs]</a>    <span class="k">def</span> <span class="nf">GetTemperature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the temperature in degrees Celcius</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (int) : temperature in degrees Celcius</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">ctemperature</span> <span class="o">=</span> <span class="n">c_int</span><span class="p">()</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetTemperature</span><span class="p">(</span><span class="n">byref</span><span class="p">(</span><span class="n">ctemperature</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_temperature</span> <span class="o">=</span> <span class="n">ctemperature</span><span class="o">.</span><span class="n">value</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+        <span class="k">print</span> <span class="s">&quot;Temperature is: </span><span class="si">%g</span><span class="s"> [Set T: </span><span class="si">%g</span><span class="s">]&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_temperature</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_T</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ERROR_CODE</span><span class="p">[</span><span class="n">error</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetTemperature"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetTemperature">[docs]</a>    <span class="k">def</span> <span class="nf">SetTemperature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temperature</span><span class="p">):</span> <span class="c"># Fixme:, see if this works</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the working temperature of the camera</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            temparature (int) : temperature in degrees Celcius</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+<span class="c">#        ctemperature = c_int(temperature)</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetTemperature</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_T</span> <span class="o">=</span> <span class="n">temperature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Verbose</span><span class="p">(</span><span class="n">ERROR_CODE</span><span class="p">[</span><span class="n">error</span><span class="p">]</span> <span class="p">)</span>
+
+
+<span class="c">###### Single Parameters Set ######</span></div>
+<div class="viewcode-block" id="AndorIdus.SetAccumulationCycleTime"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetAccumulationCycleTime">[docs]</a>    <span class="k">def</span> <span class="nf">SetAccumulationCycleTime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the accumulation cycle time</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            time_ (float) : the accumulation cycle time in seconds</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetAccumulationCycleTime</span><span class="p">(</span><span class="n">c_float</span><span class="p">(</span><span class="n">time_</span><span class="p">))</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetAcquisitionMode"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetAcquisitionMode">[docs]</a>    <span class="k">def</span> <span class="nf">SetAcquisitionMode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set acquisition mode</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetAcquisitionMode</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetADChannel"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetADChannel">[docs]</a>    <span class="k">def</span> <span class="nf">SetADChannel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the A-D channel for acquisition</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            index (int) : AD channel</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetADChannel</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Verbose</span><span class="p">(</span><span class="n">ERROR_CODE</span><span class="p">[</span><span class="n">error</span><span class="p">]</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_channel</span> <span class="o">=</span> <span class="n">index</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetEMAdvanced"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetEMAdvanced">[docs]</a>    <span class="k">def</span> <span class="nf">SetEMAdvanced</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gainAdvanced</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Enable/disable access to the advanced EM gain levels</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            gainAdvanced (int) : 1 or 0 for true or false</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetEMAdvanced</span><span class="p">(</span><span class="n">gainAdvanced</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Verbose</span><span class="p">(</span><span class="n">ERROR_CODE</span><span class="p">[</span><span class="n">error</span><span class="p">]</span> <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetEMCCDGainMode"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetEMCCDGainMode">[docs]</a>    <span class="k">def</span> <span class="nf">SetEMCCDGainMode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gainMode</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the gain mode</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            gainMode (int) : mode</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetEMCCDGainMode</span><span class="p">(</span><span class="n">gainMode</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetExposureTime"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetExposureTime">[docs]</a>    <span class="k">def</span> <span class="nf">SetExposureTime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the exposure time in seconds</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            time_ (float) : The exposure time in seconds</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetExposureTime</span><span class="p">(</span><span class="n">c_float</span><span class="p">(</span><span class="n">time_</span><span class="p">))</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetFrameTransferMode"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetFrameTransferMode">[docs]</a>    <span class="k">def</span> <span class="nf">SetFrameTransferMode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frameTransfer</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Enable/disable the frame transfer mode</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            frameTransfer (int) : 1 or 0 for true or false</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetFrameTransferMode</span><span class="p">(</span><span class="n">frameTransfer</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetImageRotate"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetImageRotate">[docs]</a>    <span class="k">def</span> <span class="nf">SetImageRotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iRotate</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the modus for image rotation</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            iRotate (int) : 0 for no rotation, 1 for 90 deg cw, 2 for 90 deg ccw</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetImageRotate</span><span class="p">(</span><span class="n">iRotate</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetKineticCycleTime"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetKineticCycleTime">[docs]</a>    <span class="k">def</span> <span class="nf">SetKineticCycleTime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the Kinetic cycle time in seconds</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            time_ (float) : The cycle time in seconds</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetKineticCycleTime</span><span class="p">(</span><span class="n">c_float</span><span class="p">(</span><span class="n">time_</span><span class="p">))</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetNumberAccumulations"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetNumberAccumulations">[docs]</a>    <span class="k">def</span> <span class="nf">SetNumberAccumulations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the number of scans accumulated in memory,</span>
+<span class="sd">        for kinetic and accumulate modes</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            number (int) : The number of accumulations</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetNumberAccumulations</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetNumberKinetics"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetNumberKinetics">[docs]</a>    <span class="k">def</span> <span class="nf">SetNumberKinetics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numKin</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the number of scans accumulated in memory for kinetic mode</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            number (int) : The number of accumulations</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetNumberKinetics</span><span class="p">(</span><span class="n">numKin</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetOutputAmplifier"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetOutputAmplifier">[docs]</a>    <span class="k">def</span> <span class="nf">SetOutputAmplifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Specify which amplifier to use if EMCCD is enabled</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            index (int) : 0 for EMCCD, 1 for conventional</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetOutputAmplifier</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outamp</span> <span class="o">=</span> <span class="n">index</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetReadMode"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetReadMode">[docs]</a>    <span class="k">def</span> <span class="nf">SetReadMode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the read mode of the camera</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            mode (int) : 0 Full Vertical Binning</span>
+<span class="sd">                         1 Multi-Track</span>
+<span class="sd">                         2 Random-track</span>
+<span class="sd">                         3 Single-Track</span>
+<span class="sd">                         4 Image</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetReadMode</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ReadMode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="c">#print (&quot;Read mode adjusted, %s&quot;, % ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetTriggerMode"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetTriggerMode">[docs]</a>    <span class="k">def</span> <span class="nf">SetTriggerMode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the trigger mode</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            mode (int) : 0 Internal</span>
+<span class="sd">                         1 External</span>
+<span class="sd">                         2 External Start (only in Fast Kinetics mode)</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetTriggerMode</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+
+
+<span class="c">###### Single Parameters Get ######</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.GetAccumulationProgress"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetAccumulationProgress">[docs]</a>    <span class="k">def</span> <span class="nf">GetAccumulationProgress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the number of completed accumulations</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (int) : The number of accumulations</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="n">c_long</span><span class="p">()</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">c_long</span><span class="p">()</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetAcquisitionProgress</span><span class="p">(</span><span class="n">byref</span><span class="p">(</span><span class="n">acc</span><span class="p">),</span> <span class="n">byref</span><span class="p">(</span><span class="n">series</span><span class="p">))</span>
+        <span class="c">#if ERROR_CODE[error] == &quot;DRV_SUCCESS&quot;:</span>
+        <span class="k">return</span> <span class="n">acc</span><span class="o">.</span><span class="n">value</span>
+        <span class="c">#else:</span>
+        <span class="c">#   return None</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.GetAcquiredData"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetAcquiredData">[docs]</a>    <span class="k">def</span> <span class="nf">GetAcquiredData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imageArray</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the Acquired data</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (array) : an array containing the acquired data</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c"># FIXME : Check how this works for FVB !!!</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ReadMode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_width</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ReadMode</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_width</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_height</span>
+            
+        <span class="k">print</span> <span class="s">&quot;Dim is </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">dim</span>
+        <span class="n">cimageArray</span> <span class="o">=</span> <span class="n">c_int</span> <span class="o">*</span> <span class="n">dim</span>
+        <span class="n">cimage</span> <span class="o">=</span> <span class="n">cimageArray</span><span class="p">()</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetAcquiredData</span><span class="p">(</span><span class="n">pointer</span><span class="p">(</span><span class="n">cimage</span><span class="p">),</span> <span class="n">dim</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cimage</span><span class="p">)):</span>
+            <span class="n">imageArray</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cimage</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_imageArray</span> <span class="o">=</span> <span class="n">imageArray</span><span class="p">[:]</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_imageArray</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.GetBitDepth"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetBitDepth">[docs]</a>    <span class="k">def</span> <span class="nf">GetBitDepth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the bit depth of the available channels</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (int[]) : The bit depths</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">bitDepth</span> <span class="o">=</span> <span class="n">c_int</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bitDepths</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_noADChannels</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetBitDepth</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">byref</span><span class="p">(</span><span class="n">bitDepth</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bitDepths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bitDepth</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bitDepths</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.GetEMGainRange"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetEMGainRange">[docs]</a>    <span class="k">def</span> <span class="nf">GetEMGainRange</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the number of completed accumulations</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            int) : The number of accumulations</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">low</span> <span class="o">=</span> <span class="n">c_int</span><span class="p">()</span>
+        <span class="n">high</span> <span class="o">=</span> <span class="n">c_int</span><span class="p">()</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetEMGainRange</span><span class="p">(</span><span class="n">byref</span><span class="p">(</span><span class="n">low</span><span class="p">),</span> <span class="n">byref</span><span class="p">(</span><span class="n">high</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gainRange</span> <span class="o">=</span> <span class="p">(</span><span class="n">low</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">high</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gainRange</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.GetNumberADChannels"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetNumberADChannels">[docs]</a>    <span class="k">def</span> <span class="nf">GetNumberADChannels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the number of AD channels</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (int) : The number of AD channels</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">noADChannels</span> <span class="o">=</span> <span class="n">c_int</span><span class="p">()</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetNumberADChannels</span><span class="p">(</span><span class="n">byref</span><span class="p">(</span><span class="n">noADChannels</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_noADChannels</span> <span class="o">=</span> <span class="n">noADChannels</span><span class="o">.</span><span class="n">value</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_noADChannels</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.GetNumberPreAmpGains"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetNumberPreAmpGains">[docs]</a>    <span class="k">def</span> <span class="nf">GetNumberPreAmpGains</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the number of Pre Amp Gains</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (int) : The number of Pre Amp Gains</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">noGains</span> <span class="o">=</span> <span class="n">c_int</span><span class="p">()</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetNumberPreAmpGains</span><span class="p">(</span><span class="n">byref</span><span class="p">(</span><span class="n">noGains</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_noGains</span> <span class="o">=</span> <span class="n">noGains</span><span class="o">.</span><span class="n">value</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_noGains</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.GetSeriesProgress"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetSeriesProgress">[docs]</a>    <span class="k">def</span> <span class="nf">GetSeriesProgress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the number of completed kenetic scans</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (int) : The number of completed kinetic scans</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="n">c_long</span><span class="p">()</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">c_long</span><span class="p">()</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetAcquisitionProgress</span><span class="p">(</span><span class="n">byref</span><span class="p">(</span><span class="n">acc</span><span class="p">),</span> <span class="n">byref</span><span class="p">(</span><span class="n">series</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">ERROR_CODE</span><span class="p">[</span><span class="n">error</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;DRV_SUCCESS&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.GetStatus"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetStatus">[docs]</a>    <span class="k">def</span> <span class="nf">GetStatus</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        returns status of camera</span>
+<span class="sd">        :param: none</span>
+<span class="sd">        :return: camera status (String)</span>
+<span class="sd">            DRV_IDLE</span>
+<span class="sd">            RV_TEMPCYCLE</span>
+<span class="sd">            DRV_ACQUIRING</span>
+<span class="sd">            DRV_TIME_NOT_MET</span>
+<span class="sd">            DRV_KINETIC_TIME_NOT_MET</span>
+<span class="sd">            DRV_ERROR_ACK</span>
+<span class="sd">            DRV_ACQ_BUFFER</span>
+<span class="sd">            DRV_SPOOLERROR</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">c_int</span><span class="p">()</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetStatus</span><span class="p">(</span><span class="n">byref</span><span class="p">(</span><span class="n">status</span><span class="p">))</span>
+        <span class="c">#self._status = ERROR_CODE[status.value]</span>
+        <span class="c">#print &quot;Camera status, %s&quot; % ERROR_CODE[error]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span>
+
+<span class="c">###### Single Parameters Get/Set ######</span></div>
+<div class="viewcode-block" id="AndorIdus.GetEMCCDGain"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetEMCCDGain">[docs]</a>    <span class="k">def</span> <span class="nf">GetEMCCDGain</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get gain</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">gain</span> <span class="o">=</span> <span class="n">c_int</span><span class="p">()</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetEMCCDGain</span><span class="p">(</span><span class="n">byref</span><span class="p">(</span><span class="n">gain</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gain</span> <span class="o">=</span> <span class="n">gain</span><span class="o">.</span><span class="n">value</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gain</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetEMCCDGain"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetEMCCDGain">[docs]</a>    <span class="k">def</span> <span class="nf">SetEMCCDGain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gain</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the EMCCD Gain setting</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            gain (int) : EMCCD setting</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetEMCCDGain</span><span class="p">(</span><span class="n">gain</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.GetHSSpeed"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetHSSpeed">[docs]</a>    <span class="k">def</span> <span class="nf">GetHSSpeed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the available HS speeds of the selected channel</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (float[]) : The speeds of the selected channel</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">HSSpeed</span> <span class="o">=</span> <span class="n">c_float</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_HSSpeeds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_noHSSpeeds</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetHSSpeed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_channel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outamp</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">byref</span><span class="p">(</span><span class="n">HSSpeed</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_HSSpeeds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">HSSpeed</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_HSSpeeds</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetHSSpeed"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetHSSpeed">[docs]</a>    <span class="k">def</span> <span class="nf">SetHSSpeed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the HS speed to the mode corresponding to the index</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            index (int) : index corresponding to the Speed mode</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetHSSpeed</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hsspeed</span> <span class="o">=</span> <span class="n">index</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.GetVSSpeed"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetVSSpeed">[docs]</a>    <span class="k">def</span> <span class="nf">GetVSSpeed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the available VS speeds of the selected channel</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (float[]) : The speeds of the selected channel</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">VSSpeed</span> <span class="o">=</span> <span class="n">c_float</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_VSSpeeds</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_noVSSpeeds</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetVSSpeed</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">byref</span><span class="p">(</span><span class="n">VSSpeed</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_VSSpeeds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">VSSpeed</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_VSSpeeds</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetVSSpeed"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetVSSpeed">[docs]</a>    <span class="k">def</span> <span class="nf">SetVSSpeed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the VS speed to the mode corresponding to the index</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            index (int) : index corresponding to the Speed mode</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetVSSpeed</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vsspeed</span> <span class="o">=</span> <span class="n">index</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.GetPreAmpGain"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetPreAmpGain">[docs]</a>    <span class="k">def</span> <span class="nf">GetPreAmpGain</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the available Pre Amp Gains</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            (float[]) : The pre amp gains</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">gain</span> <span class="o">=</span> <span class="n">c_float</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_preAmpGain</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_noGains</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetPreAmpGain</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">byref</span><span class="p">(</span><span class="n">gain</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_preAmpGain</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gain</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_preAmpGain</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetPreAmpGain"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetPreAmpGain">[docs]</a>    <span class="k">def</span> <span class="nf">SetPreAmpGain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the Pre Amp Gain to the mode corresponding to the index</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            index (int) : index corresponding to the Gain mode</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetPreAmpGain</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_preampgain</span> <span class="o">=</span> <span class="n">index</span>
+
+
+<span class="c">###### iDus interaction Functions ######</span></div>
+<div class="viewcode-block" id="AndorIdus.ShutDown"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.ShutDown">[docs]</a>    <span class="k">def</span> <span class="nf">ShutDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c"># Careful with this one!!</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Shut down the Andor</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">ShutDown</span><span class="p">()</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.AbortAcquisition"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.AbortAcquisition">[docs]</a>    <span class="k">def</span> <span class="nf">AbortAcquisition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Abort the acquisition</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">AbortAcquisition</span><span class="p">()</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.StartAcquisition"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.StartAcquisition">[docs]</a>    <span class="k">def</span> <span class="nf">StartAcquisition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Start the acquisition</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">StartAcquisition</span><span class="p">()</span>
+        <span class="c">#self._dll.WaitForAcquisition()</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetSingleImage"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetSingleImage">[docs]</a>    <span class="k">def</span> <span class="nf">SetSingleImage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Shortcut to apply settings for a single scan full image</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetReadMode</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetAcquisitionMode</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;Width: </span><span class="si">%d</span><span class="s"> Height: </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_height</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetImage</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_width</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_height</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetSingleFVB"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetSingleFVB">[docs]</a>    <span class="k">def</span> <span class="nf">SetSingleFVB</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shortcut to apply settings for a single scan FVB</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetReadMode</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetAcquisitionMode</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.GetAcquisitionTimings"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.GetAcquisitionTimings">[docs]</a>    <span class="k">def</span> <span class="nf">GetAcquisitionTimings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Acquire all the relevant timings for acquisition,</span>
+<span class="sd">        and store them in local memory</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">exposure</span>   <span class="o">=</span> <span class="n">c_float</span><span class="p">()</span>
+        <span class="n">accumulate</span> <span class="o">=</span> <span class="n">c_float</span><span class="p">()</span>
+        <span class="n">kinetic</span>    <span class="o">=</span> <span class="n">c_float</span><span class="p">()</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">GetAcquisitionTimings</span><span class="p">(</span><span class="n">byref</span><span class="p">(</span><span class="n">exposure</span><span class="p">),</span>
+                                            <span class="n">byref</span><span class="p">(</span><span class="n">accumulate</span><span class="p">),</span><span class="n">byref</span><span class="p">(</span><span class="n">kinetic</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exposure</span> <span class="o">=</span> <span class="n">exposure</span><span class="o">.</span><span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_accumulate</span> <span class="o">=</span> <span class="n">accumulate</span><span class="o">.</span><span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kinetic</span> <span class="o">=</span> <span class="n">kinetic</span><span class="o">.</span><span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Verbose</span><span class="p">(</span><span class="n">ERROR_CODE</span><span class="p">[</span><span class="n">error</span><span class="p">]</span> <span class="p">)</span>
+
+
+<span class="c">###### Misc functions ######</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetImage"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetImage">[docs]</a>    <span class="k">def</span> <span class="nf">SetImage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hbin</span><span class="p">,</span> <span class="n">vbin</span><span class="p">,</span> <span class="n">hstart</span><span class="p">,</span> <span class="n">hend</span><span class="p">,</span> <span class="n">vstart</span><span class="p">,</span> <span class="n">vend</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Specify the binning and domain of the image</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            hbin   (int) : horizontal binning</span>
+<span class="sd">            vbin   (int) : vertical binning</span>
+<span class="sd">            hstart (int) : horizontal starting point</span>
+<span class="sd">            hend   (int) : horizontal end point</span>
+<span class="sd">            vstart (int) : vertical starting point</span>
+<span class="sd">            vend   (int) : vertical end point</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetImage</span><span class="p">(</span><span class="n">hbin</span><span class="p">,</span> <span class="n">vbin</span><span class="p">,</span> <span class="n">hstart</span><span class="p">,</span> <span class="n">hend</span><span class="p">,</span> <span class="n">vstart</span><span class="p">,</span> <span class="n">vend</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetShutter"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetShutter">[docs]</a>    <span class="k">def</span> <span class="nf">SetShutter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">closingtime</span><span class="p">,</span> <span class="n">openingtime</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the configuration for the shutter</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            typ         (int) : 0/1 Output TTL low/high signal to open shutter</span>
+<span class="sd">            mode        (int) : 0/1/2 For Auto/Open/Close</span>
+<span class="sd">            closingtime (int) : millisecs it takes to close</span>
+<span class="sd">            openingtime (int) : millisecs it takes to open</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetShutter</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">closingtime</span><span class="p">,</span> <span class="n">openingtime</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetShutterEx"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetShutterEx">[docs]</a>    <span class="k">def</span> <span class="nf">SetShutterEx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">closingtime</span><span class="p">,</span> <span class="n">openingtime</span><span class="p">,</span> <span class="n">extmode</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set the configuration for the shutter in external mode</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            typ         (int) : 0/1 Output TTL low/high signal to open shutter</span>
+<span class="sd">            mode        (int) : 0/1/2 For Auto/Open/Close</span>
+<span class="sd">            closingtime (int) : millisecs it takes to close</span>
+<span class="sd">            openingtime (int) : millisecs it takes to open</span>
+<span class="sd">            extmode     (int) : 0/1/2 For Auto/Open/Close</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetShutterEx</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">closingtime</span><span class="p">,</span> <span class="n">openingtime</span><span class="p">,</span>
+                                       <span class="n">extmode</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SetSpool"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SetSpool">[docs]</a>    <span class="k">def</span> <span class="nf">SetSpool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">active</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">framebuffersize</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Set Spooling. Refer to manual for detailed description</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SetSpool</span><span class="p">(</span><span class="n">active</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">c_char_p</span><span class="p">(</span><span class="n">path</span><span class="p">),</span>
+                                   <span class="n">framebuffersize</span><span class="p">)</span>
+        <span class="c">#self._Verbose(ERROR_CODE[error] )</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SaveAsBmp"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SaveAsBmp">[docs]</a>    <span class="k">def</span> <span class="nf">SaveAsBmp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Save the most recent acquired image as a bitmap</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            path (string) : Filename to save to</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">im</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;RGB&quot;</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_width</span><span class="p">),</span> <span class="s">&quot;white&quot;</span><span class="p">)</span>
+        <span class="n">pix</span> <span class="o">=</span> <span class="n">im</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imageArray</span><span class="p">)):</span>
+            <span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_width</span><span class="p">)</span>
+            <span class="n">picvalue</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imageArray</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="mf">255.0</span><span class="o">/</span><span class="mi">65535</span><span class="p">))</span>
+            <span class="n">pix</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">picvalue</span><span class="p">,</span> <span class="n">picvalue</span><span class="p">,</span> <span class="n">picvalue</span><span class="p">)</span>
+
+        <span class="n">im</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="s">&quot;BMP&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SaveAsTxt"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SaveAsTxt">[docs]</a>    <span class="k">def</span> <span class="nf">SaveAsTxt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Save the most recent acquired image as txt</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            path (string) : Filename to save to</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_imageArray</span><span class="p">:</span>
+            <span class="n">filename</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%g</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">line</span><span class="p">)</span>
+        <span class="n">filename</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SaveAsBmpNormalised"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SaveAsBmpNormalised">[docs]</a>    <span class="k">def</span> <span class="nf">SaveAsBmpNormalised</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Save the most recent acquired image as a bitmap,</span>
+<span class="sd">        but maximize contrast</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            path (string) : Filename to save to</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">im</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;RGB&quot;</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_width</span><span class="p">),</span><span class="s">&quot;white&quot;</span><span class="p">)</span>
+        <span class="n">pix</span> <span class="o">=</span> <span class="n">im</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+        <span class="n">maxIntensity</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imageArray</span><span class="p">)</span>
+        <span class="n">minIntensity</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imageArray</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">maxIntensity</span><span class="p">,</span> <span class="n">minIntensity</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imageArray</span><span class="p">)):</span>
+            <span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_width</span><span class="p">)</span>
+            <span class="n">picvalue</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_imageArray</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">minIntensity</span><span class="p">)</span><span class="o">*</span><span class="mf">255.0</span><span class="o">/</span>
+                <span class="p">(</span><span class="n">maxIntensity</span><span class="o">-</span><span class="n">minIntensity</span><span class="p">)))</span>
+            <span class="n">pix</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">picvalue</span><span class="p">,</span> <span class="n">picvalue</span><span class="p">,</span> <span class="n">picvalue</span><span class="p">)</span>
+        <span class="n">im</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">&quot;BMP&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.SaveAsFITS"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.SaveAsFITS">[docs]</a>    <span class="k">def</span> <span class="nf">SaveAsFITS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">type_</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Save the most recent acquired image as FITS</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">            path (string) : Filename to save to</span>
+
+<span class="sd">        Output:</span>
+<span class="sd">            None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dll</span><span class="o">.</span><span class="n">SaveAsFITS</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">type_</span><span class="p">)</span>
+
+
+<span class="c">########### Automation functions #################</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.Demo_CoolDown"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.Demo_CoolDown">[docs]</a>    <span class="k">def</span> <span class="nf">Demo_CoolDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Cool down the camera for a demo measurement</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">Tset</span> <span class="o">=</span> <span class="o">-</span><span class="mi">25</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetCoolerMode</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetTemperature</span><span class="p">(</span><span class="n">Tset</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CoolerON</span><span class="p">()</span>
+
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetTemperature</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="s">&#39;DRV_TEMP_STABILIZED&#39;</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.Demo_ImagePrepare"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.Demo_ImagePrepare">[docs]</a>    <span class="k">def</span> <span class="nf">Demo_ImagePrepare</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Prepare the camera for a demo image measurement</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">PreAmpGain</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSingleImage</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetTriggerMode</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetShutter</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetPreAmpGain</span><span class="p">(</span><span class="n">PreAmpGain</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetExposureTime</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.Demo_ImageCapture"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.Demo_ImageCapture">[docs]</a>    <span class="k">def</span> <span class="nf">Demo_ImageCapture</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Perform the demo image measurement</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetTemperature</span><span class="p">()</span>
+            <span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">_temperature</span>
+            <span class="k">print</span> <span class="s">&quot;Ready for Acquisition&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">StartAcquisition</span><span class="p">()</span>
+
+            <span class="c"># Check for status</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetStatus</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="s">&#39;DRV_IDLE&#39;</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;Data not yet acquired, waiting 0.5s&quot;</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">GetAcquiredData</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SaveAsBmpNormalised</span><span class="p">(</span><span class="s">&quot;n</span><span class="si">%03g</span><span class="s">.bmp&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SaveAsBmp</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%03g</span><span class="s">.bmp&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SaveAsTxt</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%03g</span><span class="s">.txt&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.Demo_FVBPrepare"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.Demo_FVBPrepare">[docs]</a>    <span class="k">def</span> <span class="nf">Demo_FVBPrepare</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Prepare the camera for a demo image measurement</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">PreAmpGain</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSingleFVB</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetTriggerMode</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c">#self.SetShutter(1, 1, 0, 0)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetPreAmpGain</span><span class="p">(</span><span class="n">PreAmpGain</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetExposureTime</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AndorIdus.Demo_FVBCapture"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorIdusOriginal.AndorIdus.Demo_FVBCapture">[docs]</a>    <span class="k">def</span> <span class="nf">Demo_FVBCapture</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Perform the demo image measurement</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="c">#print self.GetTemperature()</span>
+            <span class="c">#print self._temperature</span>
+            <span class="k">print</span> <span class="s">&quot;Ready for Acquisition&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">StartAcquisition</span><span class="p">()</span>
+
+            <span class="c"># Check for status</span>
+            <span class="c">#while self.GetStatus() is not &#39;DRV_IDLE&#39;:</span>
+            <span class="k">print</span> <span class="s">&quot;Data not yet acquired, waiting 0.5s&quot;</span>
+            <span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetStatus</span><span class="p">()</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">GetAcquiredData</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SaveAsTxt</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%03g</span><span class="s">.txt&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
+
+
+<span class="c"># -----------------------------------------------------------------------------------</span>
+<span class="c"># List of error codes</span></div></div>
+<span class="n">ERROR_CODE</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">20001</span><span class="p">:</span> <span class="s">&quot;DRV_ERROR_CODES&quot;</span><span class="p">,</span>
+    <span class="mi">20002</span><span class="p">:</span> <span class="s">&quot;DRV_SUCCESS&quot;</span><span class="p">,</span>
+    <span class="mi">20003</span><span class="p">:</span> <span class="s">&quot;DRV_VXNOTINSTALLED&quot;</span><span class="p">,</span>
+    <span class="mi">20006</span><span class="p">:</span> <span class="s">&quot;DRV_ERROR_FILELOAD&quot;</span><span class="p">,</span>
+    <span class="mi">20007</span><span class="p">:</span> <span class="s">&quot;DRV_ERROR_VXD_INIT&quot;</span><span class="p">,</span>
+    <span class="mi">20010</span><span class="p">:</span> <span class="s">&quot;DRV_ERROR_PAGELOCK&quot;</span><span class="p">,</span>
+    <span class="mi">20011</span><span class="p">:</span> <span class="s">&quot;DRV_ERROR_PAGE_UNLOCK&quot;</span><span class="p">,</span>
+    <span class="mi">20013</span><span class="p">:</span> <span class="s">&quot;DRV_ERROR_ACK&quot;</span><span class="p">,</span>
+    <span class="mi">20024</span><span class="p">:</span> <span class="s">&quot;DRV_NO_NEW_DATA&quot;</span><span class="p">,</span>
+    <span class="mi">20026</span><span class="p">:</span> <span class="s">&quot;DRV_SPOOLERROR&quot;</span><span class="p">,</span>
+    <span class="mi">20034</span><span class="p">:</span> <span class="s">&quot;DRV_TEMP_OFF&quot;</span><span class="p">,</span>
+    <span class="mi">20035</span><span class="p">:</span> <span class="s">&quot;DRV_TEMP_NOT_STABILIZED&quot;</span><span class="p">,</span>
+    <span class="mi">20036</span><span class="p">:</span> <span class="s">&quot;DRV_TEMP_STABILIZED&quot;</span><span class="p">,</span>
+    <span class="mi">20037</span><span class="p">:</span> <span class="s">&quot;DRV_TEMP_NOT_REACHED&quot;</span><span class="p">,</span>
+    <span class="mi">20038</span><span class="p">:</span> <span class="s">&quot;DRV_TEMP_OUT_RANGE&quot;</span><span class="p">,</span>
+    <span class="mi">20039</span><span class="p">:</span> <span class="s">&quot;DRV_TEMP_NOT_SUPPORTED&quot;</span><span class="p">,</span>
+    <span class="mi">20040</span><span class="p">:</span> <span class="s">&quot;DRV_TEMP_DRIFT&quot;</span><span class="p">,</span>
+    <span class="mi">20050</span><span class="p">:</span> <span class="s">&quot;DRV_COF_NOTLOADED&quot;</span><span class="p">,</span>
+    <span class="mi">20053</span><span class="p">:</span> <span class="s">&quot;DRV_FLEXERROR&quot;</span><span class="p">,</span>
+    <span class="mi">20066</span><span class="p">:</span> <span class="s">&quot;DRV_P1INVALID&quot;</span><span class="p">,</span>
+    <span class="mi">20067</span><span class="p">:</span> <span class="s">&quot;DRV_P2INVALID&quot;</span><span class="p">,</span>
+    <span class="mi">20068</span><span class="p">:</span> <span class="s">&quot;DRV_P3INVALID&quot;</span><span class="p">,</span>
+    <span class="mi">20069</span><span class="p">:</span> <span class="s">&quot;DRV_P4INVALID&quot;</span><span class="p">,</span>
+    <span class="mi">20070</span><span class="p">:</span> <span class="s">&quot;DRV_INIERROR&quot;</span><span class="p">,</span>
+    <span class="mi">20071</span><span class="p">:</span> <span class="s">&quot;DRV_COERROR&quot;</span><span class="p">,</span>
+    <span class="mi">20072</span><span class="p">:</span> <span class="s">&quot;DRV_ACQUIRING&quot;</span><span class="p">,</span>
+    <span class="mi">20073</span><span class="p">:</span> <span class="s">&quot;DRV_IDLE&quot;</span><span class="p">,</span>
+    <span class="mi">20074</span><span class="p">:</span> <span class="s">&quot;DRV_TEMPCYCLE&quot;</span><span class="p">,</span>
+    <span class="mi">20075</span><span class="p">:</span> <span class="s">&quot;DRV_NOT_INITIALIZED&quot;</span><span class="p">,</span>
+    <span class="mi">20076</span><span class="p">:</span> <span class="s">&quot;DRV_P5INVALID&quot;</span><span class="p">,</span>
+    <span class="mi">20077</span><span class="p">:</span> <span class="s">&quot;DRV_P6INVALID&quot;</span><span class="p">,</span>
+    <span class="mi">20083</span><span class="p">:</span> <span class="s">&quot;P7_INVALID&quot;</span><span class="p">,</span>
+    <span class="mi">20089</span><span class="p">:</span> <span class="s">&quot;DRV_USBERROR&quot;</span><span class="p">,</span>
+    <span class="mi">20091</span><span class="p">:</span> <span class="s">&quot;DRV_NOT_SUPPORTED&quot;</span><span class="p">,</span>
+    <span class="mi">20099</span><span class="p">:</span> <span class="s">&quot;DRV_BINNING_ERROR&quot;</span><span class="p">,</span>
+    <span class="mi">20990</span><span class="p">:</span> <span class="s">&quot;DRV_NOCAMERA&quot;</span><span class="p">,</span>
+    <span class="mi">20991</span><span class="p">:</span> <span class="s">&quot;DRV_NOT_SUPPORTED&quot;</span><span class="p">,</span>
+    <span class="mi">20992</span><span class="p">:</span> <span class="s">&quot;DRV_NOT_AVAILABLE&quot;</span>
+<span class="p">}</span>
+<span class="c"># -----------------------------------------------------------------------------------</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">Programmable Microscope  documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, lh.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

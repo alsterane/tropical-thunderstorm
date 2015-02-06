@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>panels.ThorCam &mdash; Programmable Microscope  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Programmable Microscope  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Programmable Microscope  documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for panels.ThorCam</h1><div class="highlight"><pre>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;df-setup-basement&#39;</span>
+
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">uic</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtGui</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">from</span> <span class="nn">detectors.cameras.thorlabs.communication.ThorcamControl</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="ThorCam"><a class="viewcode-back" href="../../panels.html#panels.ThorCam.ThorCam">[docs]</a><span class="k">class</span> <span class="nc">ThorCam</span><span class="p">(</span><span class="n">pg</span><span class="o">.</span><span class="n">LayoutWidget</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ThorCam</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span> <span class="o">=</span> <span class="n">uic</span><span class="o">.</span><span class="n">loadUi</span><span class="p">(</span><span class="s">&quot;./panels/UiForms/ThorCamUI.ui&quot;</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+        <span class="n">win</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">GraphicsLayoutWidget</span><span class="p">()</span>
+        <span class="n">view</span> <span class="o">=</span> <span class="n">win</span><span class="o">.</span><span class="n">addViewBox</span><span class="p">()</span>
+        <span class="n">win</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">video_stream</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ImageItem</span><span class="p">(</span><span class="n">border</span><span class="o">=</span><span class="s">&#39;w&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">video_stream</span><span class="o">.</span><span class="n">setAutoDownsample</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">view</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">video_stream</span><span class="p">)</span>
+        <span class="n">box_layout</span> <span class="o">=</span> <span class="n">QHBoxLayout</span><span class="p">()</span>
+        <span class="n">box_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">win</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">box_layout</span><span class="p">)</span>
+
+        <span class="c"># Gradient editor to manipulate color levels (look up table)</span>
+        <span class="n">gradient_win</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">GraphicsLayoutWidget</span><span class="p">()</span>
+        <span class="n">gradient_view</span> <span class="o">=</span> <span class="n">gradient_win</span><span class="o">.</span><span class="n">addViewBox</span><span class="p">()</span>
+        <span class="n">gradient_win</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradient_editor</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">GradientEditorItem</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradient_editor</span><span class="o">.</span><span class="n">loadPreset</span><span class="p">(</span><span class="s">&#39;grey&#39;</span><span class="p">)</span>
+        <span class="n">gradient_view</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gradient_editor</span><span class="p">)</span>
+        <span class="n">box_layout_grad</span> <span class="o">=</span> <span class="n">QHBoxLayout</span><span class="p">()</span>
+        <span class="n">box_layout_grad</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">gradient_win</span><span class="p">)</span>
+        <span class="n">gradient_win</span><span class="o">.</span><span class="n">setCentralItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gradient_editor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">gradientframe</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">box_layout_grad</span><span class="p">)</span>
+
+        <span class="c"># event handling</span>
+
+        <span class="c"># initialise camera</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_init</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_camera</span><span class="p">)</span>
+
+        <span class="c"># streaming &amp; snapshots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_play</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">streaming_status</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_capture</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">capture_image</span><span class="p">)</span>
+
+        <span class="c"># exposure &amp; gain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_exp</span><span class="o">.</span><span class="n">valueChanged</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adjust_exp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_gain</span><span class="o">.</span><span class="n">valueChanged</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adjust_gain</span><span class="p">)</span>
+
+        <span class="c"># colors &amp; filters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">rb_gray</span><span class="o">.</span><span class="n">toggled</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">toggle_gray_rgb</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">c_isPSD</span><span class="o">.</span><span class="n">stateChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">toggle_psd</span><span class="p">)</span>
+
+        <span class="c"># export image</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_store</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">store_image</span><span class="p">)</span>
+
+        <span class="c"># initialise instances</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thorcam</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initStatus</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="ThorCam.init_camera"><a class="viewcode-back" href="../../panels.html#panels.ThorCam.ThorCam.init_camera">[docs]</a>    <span class="k">def</span> <span class="nf">init_camera</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thorcam</span> <span class="o">=</span> <span class="n">ThorcamControl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">video_stream</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient_editor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initStatus</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_play</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_capture</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_store</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_init</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">rb_rgb</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">rb_gray</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">c_isPSD</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_exp</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_gain</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;Camera intitialised.&quot;</span>
+</div>
+<div class="viewcode-block" id="ThorCam.capture_image"><a class="viewcode-back" href="../../panels.html#panels.ThorCam.ThorCam.capture_image">[docs]</a>    <span class="k">def</span> <span class="nf">capture_image</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initStatus</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">thorcam</span><span class="o">.</span><span class="n">snap</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="ThorCam.store_image"><a class="viewcode-back" href="../../panels.html#panels.ThorCam.ThorCam.store_image">[docs]</a>    <span class="k">def</span> <span class="nf">store_image</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initStatus</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">thorcam</span><span class="o">.</span><span class="n">store</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="ThorCam.update_data"><a class="viewcode-back" href="../../panels.html#panels.ThorCam.ThorCam.update_data">[docs]</a>    <span class="k">def</span> <span class="nf">update_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initStatus</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">streaming_status</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_capture</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">thorcam</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">streaming_status</span><span class="o">=</span><span class="bp">True</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">initStatus</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">streaming_status</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">b_capture</span><span class="o">.</span><span class="n">setDisabled</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">thorcam</span><span class="o">.</span><span class="n">pause</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">streaming_status</span><span class="o">=</span><span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Please initialise camera.&quot;</span>
+</div>
+<div class="viewcode-block" id="ThorCam.adjust_exp"><a class="viewcode-back" href="../../panels.html#panels.ThorCam.ThorCam.adjust_exp">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initStatus</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">thorcam</span><span class="o">.</span><span class="n">exposure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_exp</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="ThorCam.adjust_gain"><a class="viewcode-back" href="../../panels.html#panels.ThorCam.ThorCam.adjust_gain">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initStatus</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">thorcam</span><span class="o">.</span><span class="n">gain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">t_gain</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="ThorCam.toggle_psd"><a class="viewcode-back" href="../../panels.html#panels.ThorCam.ThorCam.toggle_psd">[docs]</a>    <span class="k">def</span> <span class="nf">toggle_psd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thorcam</span><span class="o">.</span><span class="n">toggle_psd</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="ThorCam.toggle_gray_rgb"><a class="viewcode-back" href="../../panels.html#panels.ThorCam.ThorCam.toggle_gray_rgb">[docs]</a>    <span class="k">def</span> <span class="nf">toggle_gray_rgb</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thorcam</span><span class="o">.</span><span class="n">toggle_gray_rgb</span><span class="p">()</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Programmable Microscope  documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, lh.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

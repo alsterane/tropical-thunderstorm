@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>detectors.spectrometers.andor.communication.AndorTest2 &mdash; Programmable Microscope  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="Programmable Microscope  documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">Programmable Microscope  documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for detectors.spectrometers.andor.communication.AndorTest2</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">detectors.spectrometers.andor.communication.AndorIdus</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">pyqtgraph</span> <span class="kn">as</span> <span class="nn">pg</span>
+<span class="kn">from</span> <span class="nn">pyqtgraph.Qt</span> <span class="kn">import</span> <span class="n">QtCore</span><span class="p">,</span> <span class="n">QtGui</span>
+<span class="kn">from</span> <span class="nn">pyqtgraph.dockarea</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="sd">&quot;&quot;&quot; show real time data acquisition and plotting &quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">SpectraDisplay</span><span class="p">(</span><span class="n">pg</span><span class="o">.</span><span class="n">LayoutWidget</span><span class="p">):</span>
+<div class="viewcode-block" id="SpectraDisplay"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorTest2.SpectraDisplay">[docs]</a>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SpectraDisplay</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lplt</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">PlotWidget</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lplt</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">andor</span> <span class="o">=</span> <span class="n">AndorIdus</span><span class="p">()</span>
+        <span class="c"># full vertical binning mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">andor</span><span class="o">.</span><span class="n">set_read_mode</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">andor</span><span class="o">.</span><span class="n">set_exposure_time</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">stream</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SpectraDisplay.stream"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorTest2.SpectraDisplay.stream">[docs]</a>        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fetch data and send to plot.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>   <span class="c"># to store array data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">andor</span><span class="o">.</span><span class="n">get_most_recent_image</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lplt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">clear</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">live_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cycle_time</span><span class="p">):</span></div>
+<div class="viewcode-block" id="SpectraDisplay.live_stream"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorTest2.SpectraDisplay.live_stream">[docs]</a>        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Start a &#39;Run till abort&#39; acquisition and constantly update spectra display.</span>
+
+<span class="sd">        :param cycle_time: int Minimal time between two acquisitions.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">print</span> <span class="s">&quot;run viewtimer&quot;</span>
+        <span class="k">global</span> <span class="n">view_timer</span>
+
+        <span class="c"># set parameters to run till abort mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">andor</span><span class="o">.</span><span class="n">set_acquisition_mode</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+        <span class="c"># minimal kinetic cycle time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">andor</span><span class="o">.</span><span class="n">set_kinetic_cycle_time</span><span class="p">(</span><span class="n">cycle_time</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">andor</span><span class="o">.</span><span class="n">start_acquisition</span><span class="p">()</span>
+        <span class="n">view_timer</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QTimer</span><span class="p">()</span>
+        <span class="n">view_timer</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="p">)</span>
+        <span class="n">view_timer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">pause</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="SpectraDisplay.pause"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorTest2.SpectraDisplay.pause">[docs]</a>        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Pauses the currently ongoing &#39;Run till abort&#39;-acquisition.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">view_timer</span><span class="o">.</span><span class="n">isActive</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">andor</span><span class="o">.</span><span class="n">abort_acquisition</span><span class="p">()</span>
+            <span class="n">view_timer</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+
+
+<span class="c"># code to test the class above</span>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span></div></div>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../../../detectors.spectrometers.andor.communication.html#detectors.spectrometers.andor.communication.AndorTest2.main">[docs]</a>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QApplication</span><span class="p">([])</span>
+    <span class="n">win</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMainWindow</span><span class="p">()</span>
+    <span class="n">area</span> <span class="o">=</span> <span class="n">DockArea</span><span class="p">()</span>
+    <span class="n">win</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+    <span class="n">win</span><span class="o">.</span><span class="n">setCentralWidget</span><span class="p">(</span><span class="n">area</span><span class="p">)</span>
+    <span class="n">win</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+    <span class="n">win</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="s">&#39;Control Panel&#39;</span><span class="p">)</span>
+
+    <span class="n">spectraDock</span> <span class="o">=</span> <span class="n">Dock</span><span class="p">(</span><span class="s">&quot;Spectra&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">))</span>
+    <span class="n">area</span><span class="o">.</span><span class="n">addDock</span><span class="p">(</span><span class="n">spectraDock</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">)</span>
+    <span class="n">sDisp</span> <span class="o">=</span> <span class="n">SpectraDisplay</span><span class="p">()</span>
+    <span class="n">spectraDock</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">sDisp</span><span class="p">)</span>
+    <span class="n">sDisp</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+
+    <span class="n">QtGui</span><span class="o">.</span><span class="n">QApplication</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+
+<span class="k">if</span>  <span class="n">__name__</span> <span class="o">==</span><span class="s">&#39;__main__&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">Programmable Microscope  documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, lh.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
