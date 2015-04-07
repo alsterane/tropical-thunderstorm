@@ -41,9 +41,9 @@ class NewportControl:
         data = self.s.recv(1024)
         return data
 
-    def move(self, motor, direction, steps):
+    def move_abs(self, motor, direction, steps):
         """
-        Move specified motor along specified axis for specified number of steps.
+        Move specified motor along specified axis to specified number of steps.
         :param motor: int Motor (1,2,3 or 4)
         :param direction: int Direction (0, 1)
         :param steps: int Steps.
@@ -54,6 +54,34 @@ class NewportControl:
             move_msg = str(motor) + "PA-" + str(steps)
         self.send(move_msg)
 
+    def move_rel(self, motor, direction, steps):
+        """
+        Move specified motor along specified axis to specified number of steps.
+        :param motor: int Motor (1,2,3 or 4)
+        :param direction: int Direction (0, 1)
+        :param steps: int Steps.
+        """
+        if direction:
+            move_msg = str(motor) + "PR+" + str(steps)
+        else:
+            move_msg = str(motor) + "PR-" + str(steps)
+        self.send(move_msg)
+
+    def set_acceleration(self, motor, acc):
+        """
+        Sets acceleration of picomotor.
+        """
+        acc_change_msg = str(motor) + "AC" + str(acc)
+        self.send(acc_change_msg)
+
+    def get_acceleration(self, motor):
+        """
+        Returns currently set acceleration.
+        """
+        acc_get_msg = str(motor) + "AC?"
+        self.send(acc_get_msg)
+        data = self.receive()
+        return data
 
 # Test script
 
@@ -61,7 +89,7 @@ def test_run():
     controlNewport = NewportControl('169.254.169.20', 23)
 
     # move up
-    controlNewport.move(2, 0, 100)
+    controlNewport.move(1, 0, 100)
 
 if __name__ == "__main__":
    test_run()

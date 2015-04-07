@@ -83,7 +83,7 @@ class MadCityControl:
         """
         Moves the stage to specified position along specified axis.
 
-        :param shift: Relative distance to move.
+        :param shift: Relative distance to move in microns.
         :param int Specifies axis to move (1=x, 2=y)
         """
         abs_pos = self.read_stage(axis) + shift

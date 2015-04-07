@@ -1,11 +1,13 @@
 __author__ = 'df-setup-basement'
 
+from ctypes import windll, c_int, c_char, byref, pointer, c_float, c_char_p, c_long, c_bool, c_uint, c_ushort
 import ctypes
 from holograms.SimplePhaseGrating import *
-import cv2
+import platform
+import os
 import time
 
-# control MadCityLabs Piezo Stage through Madlib.dll
+
 class MeadowlarkCommunication:
     """
     .. module:: MeadowlarkCommunication
@@ -15,45 +17,57 @@ class MeadowlarkCommunication:
     .. moduleauthor:: lh
     """
 
+
     def __init__(self):
-        lib = ctypes.WinDLL('PCIe16Interface.dll')
+        if platform.system() == "Windows":
+            try:
+                current = os.getcwd()
+                os.chdir("C:\\Users\\df-setup-basement\\PycharmProjects\\Equipment\\equipment\\modulators\\")
+                self._dll = windll.LoadLibrary('PCIe16Interface.dll')
+                os.chdir(current)
+            except:
+                raise Exception("Failed to load Meadowlark DLL. Please check specified path.")
+
+
+        #err = self._dll.GetCameraSerialNumber(byref(serial))
+        #lib = ctypes.WinDLL('PCIe16Interface.dll')
 
         # int Constructor(int LCType)
-        self.constructor = lib['Constructor']
+        #self.constructor = lib['Constructor']
 
         # void Deconstructor()
-        self.deconstructor = lib['Deconstructor']
+        #self.deconstructor = lib['Deconstructor']
 
         # void SLMPower(int Board, bool PowerOn)
-        self.setSLMPower = lib['SLMPower']
+        #self.setSLMPower = lib['SLMPower']
 
         # bool GetSLMPower(int Board)
-        self.getSLMPower = lib['GetSLMPower']
+        #self.getSLMPower = lib['GetSLMPower']
 
         # void ReadTIFF(const char* FilePath, unsigned short* ImageData,
         # unsigned int ScaleWidth, unsigned int ScaleHeight)
-        self.readTiff = lib['ReadTIFF']
+        #self.readTiff = lib['ReadTIFF']
 
         # void WriteImage(int board, unsigned short* Image)
-        self.writeImage = lib['WriteImage']
+        #self.writeImage = lib['WriteImage']
 
         # void SetTrueFrames(int Board, int TrueFrames)
-        self.setTrueFrames = lib['SetTrueFrames']
+        #self.setTrueFrames = lib['SetTrueFrames']
 
         # void LoadSequence (int Board, unsigned short* Images, int NumberOfImages)
-        self.loadSequence = lib['LoadSequence']
+        #self.loadSequence = lib['LoadSequence']
 
         # void SetSequenceRate (double FrameRate)
         # cannot find this function
         #self.setSequenceRate = lib['SetSequenceRate']
 
         # void StartSequence()
-        self.startSequence = lib['StartSequence']
+        #self.startSequence = lib['StartSequence']
 
         # void StopSequence()
-        self.stopSequence = lib['StopSequence']
+        #self.stopSequence = lib['StopSequence']
 
-    def initialise_slm(self, lcType):
+    def initialise_slm(self, lc_type):
         """
         Initialises the spatial light modulator
 
@@ -61,7 +75,7 @@ class MeadowlarkCommunication:
         :return int Number of board found.
         """
         try:
-            num = self.constructor(lcType)
+            num = self._dll.Constructor(lc_type)
         except:
             raise Exception("Initialisation failed.")
         return num
@@ -75,11 +89,12 @@ class MeadowlarkCommunication:
 
         :param board_num: int Board number of SLM which shall be shut down.
         """
-        try:
-            self.set_slm_power(board_num, 0)
-            self.deconstructor()
-        except:
-            raise Exception("Could not properly shut down.")
+        #try:
+        #if self.get_slm_power(board_num):
+        #    self.set_slm_power(board_num, 0)
+        self._dll.Deconstructor()
+        #except:
+            #raise Exception("Could not properly shut down.")
 
 
     def set_slm_power(self, board_num, is_on):
@@ -89,10 +104,9 @@ class MeadowlarkCommunication:
         :param boardNum: int Number of board.
         :param isOn: bool Specify whether board is turned on or off.
         """
-        try:
-            self.setSLMPower(ctypes.c_int(board_num), ctypes.c_bool(is_on))
-        except:
-            raise Exception("Could not turn on SLM.")
+        board_num += 1       # board num for this function is a 1 based index, i.e. starts at 1
+        self._dll.SLMPower(c_int(board_num), c_bool(is_on))
+
 
     def get_slm_power(self, board_num):
         """
@@ -101,28 +115,46 @@ class MeadowlarkCommunication:
         :param boardNum: int Number of board.
         :return bool Status of SLM (False=Off, True=On).
         """
-        try:
-            status = self.getSLMPower(ctypes.c_int(board_num))
-        except:
-            raise Exception("Could not verify status of SLM.")
+        board_num += 1       # board num for this function is a 1 based index, i.e. starts at 1
+        status = self._dll.GetSLMPower(c_int(board_num))
         return status
 
-    def read_image(self,  scale_width, scale_height):
+    def set_lut(self, board_num, lut_index):
+        #board_num += 1
+        #lut_path = path.encode('utf-8')
+        #buf = ctypes.create_string_buffer(lut_path)
+        print os.getcwd()
+        print board_num
+        if lut_index == 0:
+            self._dll.LoadLUTFile(c_int(0), c_char_p('./slm3404_at532_P16.lut'))
+        elif lut_index == 1:
+            self._dll.LoadLUTFile(c_int(0), c_char_p('./slm3404_at635_P16.lut'))
+        elif lut_index == 2:
+            status = self._dll.LoadLUTFile(c_int(0), c_char_p('./slm3404_at785_P16.lut'))
+            print status
+        elif lut_index == 3:
+            status = self._dll.LoadLUTFile(c_int(0), c_char_p('./linear.lut'))
+            print status
+        elif lut_index == 4:
+            status = self._dll.LoadLUTFile(c_int(0), c_char_p('./half.lut'))
+            print status
+
+    def read_image(self, path, scale_width, scale_height):
         """
         Read image from disk into buffer.
 
-        :param file_path: const char Path to file to load.
-        :param image_data: unsigned short Pointer to buffer which holds image data.
+        :param path: const char Path to file to load.
         :param scale_width: int Image width (either 256 px or 512 px).
         :param scale_height: int Image height (either 256 px or 512 px).
+        :return: image
         """
-        # FIXME: this still does not work. need to create & pass one character string
-        path = "C:\\PCIe16C++SDK\\Image_Files\\16Astigx.tiff"
-        cpath = ctypes.c_char(list(path))
+        tiff_path = path.encode('utf-8')
+        buf = ctypes.create_string_buffer(tiff_path)
 
         dim = scale_width*scale_height
-        self.image = (ctypes.c_ushort * dim)()
-        self.readTiff(ctypes.pointer(cpath), ctypes.pointer(self.image), ctypes.c_uint(scale_width), ctypes.c_uint(scale_height))
+        image = (c_ushort * dim)()
+        self._dll.ReadTIFF(buf, byref(image), c_uint(scale_width), c_uint(scale_height))
+        return image
 
     def write_image(self, board_num, array):
         """
@@ -131,8 +163,20 @@ class MeadowlarkCommunication:
         :param board_num: int Board number to write data to.
         :param numpy_array: unsigned short array to write to SLM.
         """
-        arr = (ctypes.c_ushort * len(array))(*array)
-        self.writeImage(board_num, ctypes.pointer(arr))
+        board_num += 1      # 1 based index
+        print np.shape(array)
+        if len(np.shape(array)) == 2:      # if 2D array, then convert into line
+            tmp = np.empty((np.size(array, 0)*np.size(array, 1)), dtype=np.uint16)
+            for i in range(np.size(array, 0)):
+                for j in range(np.size(array, 1)):
+                    tmp[i + j*np.size(array, 1)] = array[i][j]
+            arr = (c_ushort * len(tmp))(*tmp)
+            print np.shape(tmp)
+            self._dll.WriteImage(board_num, byref(arr))
+        else:
+            arr = (c_ushort * len(array))(*array)
+            self._dll.WriteImage(board_num, byref(arr))
+
 
     def set_true_frames(self, board_num, frames):
         """
@@ -143,7 +187,9 @@ class MeadowlarkCommunication:
         :param board_num: int Board number.
         :param frames: int Number of frames.
         """
-        self.setTrueFrames(ctypes.c_int(board_num), ctypes.c_int(frames))
+        board_num += 1      # 1 based index
+        self._dll.SetTrueFrames(c_int(board_num), c_int(frames))
+
 
     # FIXME: does find this function in library!! despite manual claiming it exists?
     # def set_sequence_rate(self, framerate):
@@ -167,9 +213,9 @@ class MeadowlarkCommunication:
         """
 
         # convert numpy array to unsigned short
-        arr = (ctypes.c_ushort * len(images))(*images)
+        arr = (c_ushort * len(images))(*images)
         try:
-            self.loadSequence(board_num, ctypes.byref(arr), num_images)
+            self._dll.LoadSequence(board_num, byref(arr), num_images)
         except:
             raise Exception("Image sequence could not be loaded.")
 
@@ -178,38 +224,48 @@ class MeadowlarkCommunication:
         Start loaded image sequence.
         """
         try:
-            self.startSequence()
+            self._dll.StartSequence()
         except:
             raise Exception("Sequence cannot be started.")
+
     def stop_sequence(self):
         """
         Stop loaded image sequence.
         """
         try:
-            self.stopSequence
+            self._dll.StopSequence()
         except:
             raise Exception("Sequence cannot be stopped.")
 
 
 # code to test the class above
 def main():
-    bnc = MeadowlarkCommunication()
-    num = bnc.initialise_slm(1)
-    print num
-    bnc.set_true_frames(0, 3)
-    bnc.set_slm_power(0, True)
+    #bnc = MeadowlarkCommunication()
+    #num = bnc.initialise_slm(1)
+    #print num
+    #print bnc.get_slm_power(num)
+    #print bnc.set_slm_power(num, True)
+    #bnc.set_true_frames(0, 3)
+    #bnc.set_slm_power(0, True)
 
-
-    print "Trying to generate and write an array to the SLM"
     grating = SimplePhaseGrating()
     array = []
-    for i in range(50):
+    for i in range(1):
         array.append(grating.createOneDTestArray(4.0*(i+1.0)))
 
-    for i in range(50):
-        bnc.write_image(0, array[i])
+    for i in range(1):
+        #bnc.write_image(0, array[i])
         time.sleep(0.5)
 
-    bnc.shutdown_slm(0)
+    #print("images written")
+    #print bnc.get_slm_power(num)
+    #bnc.set_slm_power(2, 1)
+    #print bnc.get_slm_power(num)
+    #print ("now shutting down")
+    #bnc.set_slm_power(2, 0)
+    #bnc.shutdown_slm(num)
+
+    arr = np.empty((5))
+    print len(np.shape(arr))
 
 if  __name__ =='__main__':main()
