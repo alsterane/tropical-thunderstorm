@@ -5,8 +5,7 @@ This code is partially based on code from David Baddeley, Hamid Ohadi and Martij
 """
 
 # required modules
-from ctypes import windll, c_int, c_char, byref, c_long, pointer, c_float, c_char_p, cdll, c_long
-import ctypes
+from ctypes import windll, c_int, c_char, byref, pointer, c_float, c_char_p, c_long
 from PIL import Image
 
 import time
@@ -14,6 +13,7 @@ import platform
 import numpy as np
 
 DLL_PATH = "C:\\Program Files\\Andor SOLIS\\Drivers\\atmcd64d"
+
 
 class AndorIdus():
     """
@@ -25,6 +25,7 @@ class AndorIdus():
         """
         Loads and initialises driver.
         """
+        self._verbosity = True
 
         # load .dll library
         if platform.system() == "Windows":
@@ -40,6 +41,9 @@ class AndorIdus():
             raise Exception("Initialisation resulted in: %s" % (ERROR_CODE[err]))
         print("Initialisation: %s" % (ERROR_CODE[err]))
 
+        # camera remains at set temperature
+        self.set_cooler_mode(1)
+
         # get ccd width and height from detector
         cw = c_int()
         ch = c_int()
@@ -51,36 +55,39 @@ class AndorIdus():
         self._dll.GetPixelSize(byref(x_size), byref(y_size))
 
         # Initiate parameters
-        self._width        = cw.value
-        self._height       = ch.value
-        self._pixel_width  = x_size.value
+        self._width = cw.value
+        self._height = ch.value
+        self._pixel_width = x_size.value
         self._pixel_height = y_size.value
-        self._temperature  = 20.0
-        self._set_T        = None
-        self._gain         = 1
-        self._gainRange    = None
-        self._status       = ERROR_CODE[err]
-        self._verbosity    = True
-        self._preampgain   = None
-        self._channel      = None
-        self._outamp       = None
-        self._hsspeed      = None
-        self._vsspeed      = None
-        self._serial       = None
-        self._exposure     = 0
-        self._accumulate   = None
-        self._kinetic      = None
-        self._bitDepths    = []
-        self._preAmpGain   = []
-        self._VSSpeeds     = []
-        self._noGains      = None
-        self._imageArray   = []
-        self._noVSSpeeds   = None
-        self._HSSpeeds     = []
+        self._temperature = 20.0
+        self._set_T = None
+        self._gain = 1
+        self._gainRange = None
+        self._status = ERROR_CODE[err]
+        self._preampgain = None
+        self._channel = None
+        self._outamp = None
+        self._hsspeed = None
+        self._vsspeed = None
+        self._serial = None
+        self._exposure = 0
+        self._accumulate = None
+        self._kinetic = None
+        self._bitDepths = []
+        self._preAmpGain = []
+        self._VSSpeeds = []
+        self._noGains = None
+        self._imageArray = []
+        self._noVSSpeeds = None
+        self._HSSpeeds = []
         self._noADChannels = None
-        self._noHSSpeeds   = None
-        self._ReadMode     = None
-        self._AcquisitionMode = None
+        self._noHSSpeeds = None
+        self._ReadMode = None
+        self._bit_depths = None
+        self._cycle_time = None
+        if self.set_acquisition_mode(1):
+            self._AcquisitionMode = 1
+
 
 
 
@@ -114,10 +121,10 @@ class AndorIdus():
         get number of HS speeds
         :return: int number of HS speeds
         """
-        num_HSSpeeds = c_int()
+        num_hs_speeds = c_int()
         error = self._dll.GetNumberHSSpeeds(self._channel, self._outamp,
-                                            byref(num_HSSpeeds))
-        self._noHSSpeeds = num_HSSpeeds.value
+                                            byref(num_hs_speeds))
+        self._noHSSpeeds = num_hs_speeds.value
         return self._noHSSpeeds
 
     def get_number_vs_speeds(self):
@@ -125,9 +132,9 @@ class AndorIdus():
         get number of VS speeds
         :return: int number of VS speeds
         """
-        num_VSSpeeds = c_int()
-        error = self._dll.GetNumberVSSpeeds(byref(num_VSSpeeds))
-        self._noVSSpeeds = num_VSSpeeds.value
+        num_vs_speeds = c_int()
+        self._dll.GetNumberVSSpeeds(byref(num_vs_speeds))
+        self._noVSSpeeds = num_vs_speeds.value
         return self._noVSSpeeds
 
 # ---------------------------------------------------------------------------------------------------
@@ -188,6 +195,18 @@ class AndorIdus():
         self.status("Checking temperature ", err)
         return self._temperature
 
+    def get_temperature_status(self):
+        """
+        Reads out the temperature of the CCD.
+
+        :return: int Temperature in degree celsius.
+        """
+        temp = c_int()
+        err = self._dll.GetTemperature(byref(temp))
+        self._temperature = temp.value
+        #print "Temperature is: %g [Set T: %g]" % (self._temperature, self._set_T)
+        return err
+
     def set_temperature(self, temperature):
         """
         Sets the temperature of the camera.
@@ -212,6 +231,7 @@ class AndorIdus():
         """
         err = self._dll.SetAccumulationCycleTime(c_float(time_))
         self.status("Setting accumulation cycle ", err)
+        self._cycle_time = time_
         return err
 
     def set_acquisition_mode(self, mode):
@@ -221,7 +241,17 @@ class AndorIdus():
         err = self._dll.SetAcquisitionMode(mode)
         self.status("Setting acquisition mode ", err)
         self._AcquisitionMode = mode
-        return err
+        if err != 20002:
+            return 0
+        else:
+            return 1
+
+    def get_acquisition_mode(self):
+        """
+        Get acquisition mode.
+        :return: Current acquisiton mode
+        """
+        return self._AcquisitionMode
 
     def set_ad_channel(self, index):
         """
@@ -293,6 +323,7 @@ class AndorIdus():
         """
         err = self._dll.SetKineticCycleTime(c_float(time_))
         self.status("Kinetic cycle time changed", err)
+        self._cycle_time = time_
 
     def set_number_accumulate(self, number):
         '''
@@ -362,6 +393,8 @@ class AndorIdus():
         :param index: index corresponding to speed mode
         """
         error = self._dll.SetHSSpeed(index)
+        if error == 20002:
+            print("HS speed successfully adjusted to " + str(self.get_hs_speed()[index]))
         self._hsspeed = index
 
     def set_vs_speed(self, index):
@@ -370,6 +403,8 @@ class AndorIdus():
         :param index: index corresponding to speed mode
         """
         error = self._dll.SetVSSpeed(index)
+        if error == 20002:
+            print("VS speed successfully adjusted to " + str(self.get_vs_speed()[index]))
         self._vsspeed = index
 
 # ---------------------------------------------------------------------------------------------------
@@ -398,7 +433,7 @@ class AndorIdus():
             self._bitDepths.append(bit_depth.value)
         return self._bitDepths
 
-    def get_EM_gain_range(self):
+    def get_em_gain_range(self):
         """
         returns gain range
         :return: int gain range
@@ -475,7 +510,7 @@ class AndorIdus():
         return rd_time.value
 
 ###### Single Parameters Get/Set ######
-    def GetEMCCDGain(self):
+    def get_emccd_gain(self):
         """
         get gain
         :return:
@@ -486,7 +521,7 @@ class AndorIdus():
         #self._Verbose(ERROR_CODE[error] )
         return self._gain
 
-    def SetEMCCDGain(self, gain):
+    def set_emccd_gain(self, gain):
         '''
         Set the EMCCD Gain setting
 
@@ -499,39 +534,44 @@ class AndorIdus():
         error = self._dll.SetEMCCDGain(gain)
         #self._Verbose(ERROR_CODE[error] )
 
-    def GetHSSpeed(self):
-        '''
-        Returns the available HS speeds of the selected channel
+    def get_mcp_gain(self):
+        """
+        Allows the user to control the voltage across the microchannel plate.
+        Increasing the gain increases the voltage and so amplifies the signal.
+        The gain range can be returned using GetMCPGainRange.
+        Available fo iStar platforms (ICCDs)
+        :return: gain range (low and high value)
+        """
+        gain_low = c_int()
+        gain_high = c_int()
+        error = self._dll.GetMCPGainRange(byref(gain_low), byref(gain_high))
+        return gain_low, gain_high
 
-        Input:
-            None
 
-        Output:
-            (float[]) : The speeds of the selected channel
-        '''
-        HSSpeed = c_float()
+    def get_hs_speed(self):
+        """
+        Returns HS speed of selected channel.
+        :return: HS speed of selected channel.
+        """
+        hs_speed = c_float()
         self._HSSpeeds = []
+        self.get_number_hs_speeds()
         for i in range(self._noHSSpeeds):
-            self._dll.GetHSSpeed(self._channel, self._outamp, i, byref(HSSpeed))
-            self._HSSpeeds.append(HSSpeed.value)
+            self._dll.GetHSSpeed(self._channel, self._outamp, i, byref(hs_speed))
+            self._HSSpeeds.append(hs_speed.value)
         return self._HSSpeeds
 
-    def GetVSSpeed(self):
-        '''
-        Returns the available VS speeds of the selected channel
-
-        Input:
-            None
-
-        Output:
-            (float[]) : The speeds of the selected channel
-        '''
-        VSSpeed = c_float()
+    def get_vs_speed(self):
+        """
+        Returns VS speed of selected channel.
+        :return: VS speed of selected channel.
+        """
+        vs_speed = c_float()
         self._VSSpeeds = []
-
+        self.get_number_vs_speeds()
         for i in range(self._noVSSpeeds):
-            self._dll.GetVSSpeed(i, byref(VSSpeed))
-            self._VSSpeeds.append(VSSpeed.value)
+            self._dll.GetVSSpeed(i, byref(vs_speed))
+            self._VSSpeeds.append(vs_speed.value)
         return self._VSSpeeds
 
     def get_preamp_gain(self):
@@ -540,6 +580,7 @@ class AndorIdus():
         :return: float preamp gain
         """
         gain = c_float()
+        self.get_num_preamp_gains()
         self._preAmpGain = []
         for i in range(self._noGains):
             self._dll.GetPreAmpGain(i, byref(gain))
@@ -553,6 +594,8 @@ class AndorIdus():
         :return:
         """
         error = self._dll.SetPreAmpGain(index)
+        if error == 20002:
+            print("Preamp gain successfully adjusted to " + str(self.get_preamp_gain()[index]))
         self._preampgain = index
 
 
@@ -602,6 +645,7 @@ class AndorIdus():
         """
         self.set_read_mode(0)
         self.set_acquisition_mode(1)
+
 
     def get_acquisition_timings(self):
         """
@@ -666,10 +710,74 @@ class AndorIdus():
 
         c_img_array = c_long * dim
         c_img = c_img_array()
-        err = self._dll.GetMostRecentImage(byref(c_img), dim)
+        self._dll.GetMostRecentImage(byref(c_img), dim)
         for i in range(len(c_img)):
             img_array.append(c_img[i])
         return img_array
+
+    def get_most_recent_line(self, av):
+        """
+        Gets the most recent line.
+        :param img_array: Fixed widht array to store data.
+        :return: img_array: Array with retrieved data.
+        """
+        if self._ReadMode != 0:     # single scan with FVB
+            print("Incompatible read mode.")
+        else:
+            dim = self._width
+        if av == 1:
+            c_img_array = c_int * dim
+            c_img = c_img_array()
+            self.wait_for_acquisition()
+            self._dll.GetMostRecentImage(byref(c_img), dim)
+            img_array = np.frombuffer(c_img, dtype=c_int)
+            return img_array
+        elif av > 1:
+            num = 0
+            img_array = np.zeros(dim)
+            while num < av:
+                c_img_array = c_int * dim
+                c_img = c_img_array()
+                self.wait_for_acquisition()
+                self._dll.GetMostRecentImage(byref(c_img), dim)
+                img_array += np.frombuffer(c_img, dtype=c_int)
+                num += 1
+            img_array /= av
+            return img_array
+        else:
+            print("average needs to be bigger or equal to 1.")
+
+    def get_oldest_line(self, av):
+        """
+        Gets the most recent line.
+        :param img_array: Fixed widht array to store data.
+        :return: img_array: Array with retrieved data.
+        """
+        if self._ReadMode != 0:     # single scan with FVB
+            print("Incompatible read mode.")
+        else:
+            dim = self._width
+        if av == 1:
+            c_img_array = c_int * dim
+            c_img = c_img_array()
+            self.wait_for_acquisition()
+            self._dll.GetOldestImage(byref(c_img), dim)
+            img_array = np.frombuffer(c_img, dtype=c_int)
+            return img_array
+        elif av > 1:
+            num = 0
+            img_array = np.zeros(dim)
+            while num < av:
+                c_img_array = c_int * dim
+                c_img = c_img_array()
+                self.wait_for_acquisition()
+                self._dll.GetOldestImage(byref(c_img), dim)
+                img_array += np.frombuffer(c_img, dtype=c_int)
+                num += 1
+            img_array /= av
+            return img_array
+        else:
+            print("average needs to be bigger or equal to 1.")
 
     def get_oldest_image(self, img_array):
         """
@@ -790,7 +898,6 @@ class AndorIdus():
             pix[row, col] = (picvalue, picvalue, picvalue)
         im.save(path, "BMP")
 
-
 # -----------------------------------------------------------------------------------
 # Control functions
 # -----------------------------------------------------------------------------------
@@ -799,12 +906,17 @@ class AndorIdus():
         cool down camera to specified temperature
         :return:
         """
-        self.SetCoolerMode(1)
-        self.SetTemperature(temperature)
+        self.set_cooler_mode(1)
+        self.set_temperature(temperature)
         self.enable_cooling()
-
-        while self.GetTemperature() is not 'DRV_TEMP_STABILIZED':
+        self.set_temperature(temperature)
+        a = 0
+        while self.get_temperature_status() != 20036:
+            a+=1
             time.sleep(10)
+            print ("Temperature is: " + str(self.get_temperature()))
+            if a== 40:
+                break
 
     def setup_fvb(self, gain, exposure):
         """
@@ -817,18 +929,6 @@ class AndorIdus():
         #self.SetShutter(1, 1, 0, 0)
         self.SetPreAmpGain(PreAmpGain)
         self.SetExposureTime(exposure)
-
-    def capture_fvb(self):
-        """
-        capture spectra with full vertical binning
-        :return:
-        """
-        i = 0
-        self.start_acquisition()
-        data = []
-        time.sleep(2.0)
-        self.get_acquired_data(data)
-        return data
 
     def status(self, action, code):
         """
@@ -843,6 +943,12 @@ class AndorIdus():
             print(action + "completed successfully %s " % (ERROR_CODE[code]))
 # -----------------------------------------------------------------------------------
 
+
+class ErrorWithCode(Exception):
+    def __init__(self, code):
+        self.code = code
+    def __str__(self):
+        return repr(self.code + ERROR_CODE[self.code])
 
 # -----------------------------------------------------------------------------------
 # List of error codes

@@ -24,7 +24,7 @@ class Shamrock():
 
         # possible to pass a path of camera detector ini file.
         self._device = 0
-        self._slit = None
+        self._slit = 1
         self._verbosity = True  # whether to output much info or not
 
         # load .dll library
@@ -36,8 +36,6 @@ class Shamrock():
                 os.chdir(old_dir)
             except:
                 raise Exception("Failed to load Andor DLL. Please check specified path.")
-
-
         try:
             self.initialise()
         except:
@@ -64,6 +62,8 @@ class Shamrock():
 
         # store currently active grating
         self._current_grating = self.get_grating()
+        self._slit_width = self.get_auto_slit_width(1)
+        self._grating_center = self.get_wavelength()
 
     def initialise(self):
         """
@@ -125,6 +125,7 @@ class Shamrock():
                 print("Failed to set wavelength, will try again")
                 time.sleep(0.1 * retry)
             else:
+                self._current_grating = grating
                 break
 
     def get_grating(self):
@@ -201,6 +202,7 @@ class Shamrock():
                 print("Failed to set wavelength, will try again")
                 time.sleep(0.1)
             else:
+                self._grating_center = wavelength
                 self.status("Wavelength change", err)
                 break
 
@@ -275,6 +277,7 @@ class Shamrock():
         assert(1 <= index <= 4)
         width_um = c_float(width)
         self._dll.ShamrockSetAutoSlitWidth(self._device, index, width_um)
+        self._slit_width = width
 
     def get_auto_slit_width(self, index):
         """
@@ -364,7 +367,6 @@ class Shamrock():
                 fs.append(f)
         # TODO: handle correctly when more than one future
         return fs[-1]
-
 
     def move_absolute(self, pos):
         """
@@ -471,6 +473,13 @@ class Shamrock():
             self.close()
             self._device = None
 
+    def shutter_control(self, a):
+        """
+        Control the shutter.
+        :param a: shutter mode (1=open, 0=close)
+        """
+        self._dll.ShamrockSetShutter(self._device, a)
+
     def test_connection(self):
         """
         Check whether the connection to the spectrograph works.
@@ -569,9 +578,6 @@ OUTPUT_SLIT_DIRECT = 4
 
 # SHAMROCK_ERRORLENGTH 64
 
-def test():
-    sham = Shamrock()
-    sham.close()
 
 if __name__ == '__main__':
     test()

@@ -2,16 +2,11 @@ __author__ = 'df-setup-basement'
 
 
 import MMCorePy
-from threading import Thread
-import numpy as np
 from PyQt4 import QtCore
 from scipy import fftpack
 from dialogs.SaveImage import *
-import pyqtgraph as pg
-import pyqtgraph.exporters
+import time
 
-
-#
 class ThorcamControl:
 
     def __init__(self, video_stream, gradient_editor):
@@ -105,6 +100,18 @@ class ThorcamControl:
                 else:
                     self.img = tmp.astype(np.uint8)
                     self.video_stream.setImage(self.img, lut=None, levels=(0, 255), autoDownsample=True)
+
+    def grab_image(self, delay):
+        """
+        Grabs an image.
+        :return: image array.
+        """
+        time.sleep(delay)
+        self.mmc.snapImage()
+        tmp = self.mmc.getImage()
+        tmp = tmp.view(dtype=np.uint8).reshape(tmp.shape[0], tmp.shape[1], 4)[...,2::-1]
+        tmp = tmp.astype(np.uint8)
+        return tmp
 
     def store(self):
         SaveImage(self.img)
