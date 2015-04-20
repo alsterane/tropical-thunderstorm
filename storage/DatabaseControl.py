@@ -284,6 +284,36 @@ class DatabaseControl:
         db.close()
         return return_value
 
+    def get_last_n_raster_scans(self, n):
+        """
+        :param n: Displays last n raster scans.
+        :return:
+        """
+        db = sqlite3.connect(shrd.__DB_PATH__)
+        cursor = db.cursor()
+        cmd = '''SELECT * from spectra WHERE description LIKE '%Raster Scan:%' order by spectra_id limit ''' \
+              + str(n) + ''
+        results = cursor.execute(cmd)
+        return_value = results.fetchall()
+        db.commit()
+        db.close()
+        return return_value
+
+    def get_last_n_kinetic_scans(self, n):
+        """
+        :param n: Displays last n kinetic scans.
+        :return:
+        """
+        db = sqlite3.connect(shrd.__DB_PATH__)
+        cursor = db.cursor()
+        cmd = '''SELECT * from spectra WHERE description LIKE '%Kinetic Scan:%' order by spectra_id limit ''' \
+              + str(n) + ''
+        results = cursor.execute(cmd)
+        return_value = results.fetchall()
+        db.commit()
+        db.close()
+        return return_value
+
 
 
 

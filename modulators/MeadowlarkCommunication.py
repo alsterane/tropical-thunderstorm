@@ -80,7 +80,7 @@ class MeadowlarkCommunication:
             raise Exception("Initialisation failed.")
         return num
 
-    def shutdown_slm(self, board_num):
+    def shutdown_slm(self):
         """
         This function is responsible for closing communication with the hardware, and for properly shutting down
         the hardware. This should always be the last BNS function that the user calls.
@@ -89,6 +89,10 @@ class MeadowlarkCommunication:
 
         :param board_num: int Board number of SLM which shall be shut down.
         """
+        if self.get_slm_power(1):
+            self.set_slm_power(1, 0)
+        if self.get_slm_power(2):
+            self.set_slm_power(2, 0)
         #try:
         #if self.get_slm_power(board_num):
         #    self.set_slm_power(board_num, 0)
@@ -104,7 +108,7 @@ class MeadowlarkCommunication:
         :param boardNum: int Number of board.
         :param isOn: bool Specify whether board is turned on or off.
         """
-        board_num += 1       # board num for this function is a 1 based index, i.e. starts at 1
+        board_num -= 1       # want to call slm 1 as 1 and slm 2 as 2
         self._dll.SLMPower(c_int(board_num), c_bool(is_on))
 
 
@@ -115,29 +119,43 @@ class MeadowlarkCommunication:
         :param boardNum: int Number of board.
         :return bool Status of SLM (False=Off, True=On).
         """
-        board_num += 1       # board num for this function is a 1 based index, i.e. starts at 1
+        board_num -= 1
         status = self._dll.GetSLMPower(c_int(board_num))
         return status
 
     def set_lut(self, board_num, lut_index):
-        #board_num += 1
-        #lut_path = path.encode('utf-8')
-        #buf = ctypes.create_string_buffer(lut_path)
-        print os.getcwd()
-        print board_num
+        """
+        Sets LUT for specified SLM (board_num). The LUT is defined over the lut_index.
+        :param board_num: which SLM to set the LUT for.
+        :param lut_index: which index LUT to set (0 = 532, 1 = 633, 2 = 785, 3 = linear, 4 = half)
+        :return:
+        """
         if lut_index == 0:
-            self._dll.LoadLUTFile(c_int(0), c_char_p('./slm3404_at532_P16.lut'))
+            if board_num == 1:
+                self._dll.LoadLUTFile(c_int(0), c_char_p('./slm3404_at532_P16.lut'))
+            elif board_num == 2:
+                self._dll.LoadLUTFile(c_int(0), c_char_p('./slm3404_at532_P16.lut'))
         elif lut_index == 1:
-            self._dll.LoadLUTFile(c_int(0), c_char_p('./slm3404_at635_P16.lut'))
+            if board_num == 1:
+                self._dll.LoadLUTFile(c_int(0), c_char_p('./slm3404_at635_P16.lut'))
+            elif board_num == 2:
+                self._dll.LoadLUTFile(c_int(0), c_char_p('./slm3404_at635_P16.lut'))
         elif lut_index == 2:
-            status = self._dll.LoadLUTFile(c_int(0), c_char_p('./slm3404_at785_P16.lut'))
-            print status
+            if board_num == 1:
+                self._dll.LoadLUTFile(c_int(0), c_char_p('./slm3404_at785_P16.lut'))
+            elif board_num == 2:
+                self._dll.LoadLUTFile(c_int(0), c_char_p('./slm3404_at785_P16.lut'))
         elif lut_index == 3:
-            status = self._dll.LoadLUTFile(c_int(0), c_char_p('./linear.lut'))
-            print status
+            if board_num == 1:
+                self._dll.LoadLUTFile(c_int(0), c_char_p('./linear.lut'))
+            elif board_num == 2:
+                self._dll.LoadLUTFile(c_int(0), c_char_p('./linear.lut'))
         elif lut_index == 4:
-            status = self._dll.LoadLUTFile(c_int(0), c_char_p('./half.lut'))
-            print status
+            if board_num == 1:
+                self._dll.LoadLUTFile(c_int(0), c_char_p('./half.lut'))
+            elif board_num == 2:
+                self._dll.LoadLUTFile(c_int(0), c_char_p('./half.lut'))
+
 
     def read_image(self, path, scale_width, scale_height):
         """
@@ -163,13 +181,15 @@ class MeadowlarkCommunication:
         :param board_num: int Board number to write data to.
         :param numpy_array: unsigned short array to write to SLM.
         """
-        board_num += 1      # 1 based index
+        board_num -= 1
         print np.shape(array)
         if len(np.shape(array)) == 2:      # if 2D array, then convert into line
-            tmp = np.empty((np.size(array, 0)*np.size(array, 1)), dtype=np.uint16)
-            for i in range(np.size(array, 0)):
-                for j in range(np.size(array, 1)):
-                    tmp[i + j*np.size(array, 1)] = array[i][j]
+            tmp = np.array(array.T, dtype=np.uint16)
+            tmp = tmp.flatten()
+            #tmp = np.empty((np.size(array, 0)*np.size(array, 1)), dtype=np.uint16)
+            #for i in range(np.size(array, 0)):
+                #for j in range(np.size(array, 1)):
+                    #tmp[i + j*np.size(array, 1)] = array[i][j]
             arr = (c_ushort * len(tmp))(*tmp)
             print np.shape(tmp)
             self._dll.WriteImage(board_num, byref(arr))
@@ -240,22 +260,17 @@ class MeadowlarkCommunication:
 
 # code to test the class above
 def main():
-    #bnc = MeadowlarkCommunication()
-    #num = bnc.initialise_slm(1)
-    #print num
-    #print bnc.get_slm_power(num)
+    bnc = MeadowlarkCommunication()
+    num = bnc.initialise_slm(1)
+    print num
+    print bnc.get_slm_power(1)
+    print bnc.get_slm_power(2)
+    bnc.shutdown_slm()
     #print bnc.set_slm_power(num, True)
     #bnc.set_true_frames(0, 3)
     #bnc.set_slm_power(0, True)
 
-    grating = SimplePhaseGrating()
-    array = []
-    for i in range(1):
-        array.append(grating.createOneDTestArray(4.0*(i+1.0)))
 
-    for i in range(1):
-        #bnc.write_image(0, array[i])
-        time.sleep(0.5)
 
     #print("images written")
     #print bnc.get_slm_power(num)
@@ -264,8 +279,5 @@ def main():
     #print ("now shutting down")
     #bnc.set_slm_power(2, 0)
     #bnc.shutdown_slm(num)
-
-    arr = np.empty((5))
-    print len(np.shape(arr))
 
 if  __name__ =='__main__':main()

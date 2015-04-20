@@ -104,6 +104,20 @@ class StorageControl:
         # Note that this returned a 2D array!
         return new_data
 
+    def auto_load_kinetic(self, path):
+        """
+        Loads spectrum from file.
+        :param path: path where spectrum is saved
+        :return:
+        """
+        # Read the array from disk
+        new_data = np.loadtxt(path)
+        # Note that this returns a 2D array!
+        twv = new_data[0, :]
+        wlwv = new_data[1:np.size(new_data, 0), 0]
+        img = new_data[1:np.size(new_data, 0), 1:np.size(new_data, 1)]
+        return twv, wlwv, img
+
     def get_auto_path(self, base_path, identifier):
         """
         Returns an automatically generated path in format <base_path>/YYYY/<Month>/DD/<Identifier>_<uuid>

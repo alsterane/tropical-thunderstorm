@@ -3,6 +3,7 @@
 
 import pyqtgraph.console
 from PyQt4 import Qt, QtGui, QtCore
+from pyqtgraph.dockarea import *
 import pickle
 from panels.TimeSeries import *
 from panels.SpectrometerDisplay import *
@@ -11,9 +12,11 @@ from panels.ThorCam import *
 from panels.GeneralControl import *
 from panels.SpectrometerControl import *
 from panels.StageControl import *
+from panels.HistorySettings import *
 from panels.HistoryDisplay import *
 from panels.SLMControl import *
 import ConfigParser
+import daq.NiDaqControl as nidaq
 import SharedDefinitions as shrd
 import storage.DatabaseControl as dbctrl
 import storage.StorageControl as storage
@@ -32,20 +35,31 @@ class Interface(QtGui.QApplication):
         self.processEvents()
         splash.showMessage("Loading configuration...")
 
-        # ------------------------------------------------BEGIN GUI Initialisation ---------------------------
+        # ------------------------------------------------ INSTRUMENT CONTROL INSTANCES ---------------------------
+        # DAQ card, channel 0 (for shutter)
+        self.vo = nidaq.VoltageOutput(nidaq.NiDaqControl(), 'cDAQ1Mod1', 0, -5.0, 5.0)
+
+        # ------------------------------------------------ DATABASE AND STORAGE CONTROL INSTANCES ---------------------------
+        #if shrd.__DB__ is None:     # init if controller has not been instanced yet.
+        self.db_ctrl = dbctrl.DatabaseControl()
+        # initiate storage instance
+        #if shrd.__STORAGE__ is None:
+        self.storage_ctrl = storage.StorageControl()
+
+        # ------------------------------------------------ BEGIN GUI Initialisation ---------------------------
         self.win = QtGui.QMainWindow()
 
         # disable close button
         self.win.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowTitleHint | QtCore.Qt.CustomizeWindowHint
         | QtCore.Qt.WindowMaximizeButtonHint | QtCore.Qt.WindowMinimizeButtonHint)
 
-        # statusbar
-        self.statusbar = self.win.statusBar().showMessage("Ready")
+        # status bar
+        self.status_bar = self.win.statusBar().showMessage("Ready")
 
-        # menubar
-        self.menubar = self.win.menuBar()
+        # menu bar
+        self.menu_bar = self.win.menuBar()
 
-        file_menu = self.menubar.addMenu('&Tools')
+        file_menu = self.menu_bar.addMenu('&Tools')
 
         save_dock_action = QtGui.QAction('&Save dock state', self)
         save_dock_action.setShortcut('Ctrl+D')
@@ -58,93 +72,119 @@ class Interface(QtGui.QApplication):
         file_menu.addAction(exit_action)
 
         self.area = DockArea()
-        splash.showMessage("Creating panels...")
+        splash.showMessage("Creating panels and docks...")
 
         self.win.setCentralWidget(self.area)
         self.win.showMaximized()
         self.win.setWindowTitle('Control Panel')
 
-        # control shutter and laser
+        # ------------------ CREATE DOCKS -----------------------------
+        # general control dock
         self.general_dock = Dock("General Setttings", size=(1, 1), closable=False)
         self.area.addDock(self.general_dock, 'left')
-        self.general_dock.addWidget(GeneralControl())
 
-        # control petitioners of sample and objectives
-        splash.showMessage("Creating panels...(Positioning)")
-        self.positioning_dock = Dock("Positioning", size=(1, 2.5), closable=False)
-        self.area.addDock(self.positioning_dock, 'bottom', self.general_dock)
-        self.positioning_dock.addWidget(Positioning())
-
-        # SPECTRA DISPLAY PANEL
-        splash.showMessage("Creating panels...(Spectra display)")
+        # spectra display dock
         self.spectra_display = Dock("Spectra", size=(1, 5), closable=False)
         self.area.addDock(self.spectra_display, "right")
+
+        # positioning dock
+        self.positioning_dock = Dock("Positioning", size=(1, 2.5), closable=False)
+        self.area.addDock(self.positioning_dock, 'bottom', self.general_dock)
+
+        # spectrometer control dock
+        self.spectrometer_dock = Dock("Spectrometer", size=(1, 2), closable=False)
+        self.area.addDock(self.spectrometer_dock, 'bottom', self.positioning_dock)
+
+        # raster scan dock
+        self.raster_scan_display = Dock("Raster scan", size=(1, 1), closable=False)
+        self.area.addDock(self.raster_scan_display, "bottom", self.spectra_display)
+
+        # time series dock
+        self.time_series_disp = Dock("Time series", size=(1, 1), closable=False)
+        self.area.addDock(self.time_series_disp, "above", self.raster_scan_display)
+
+        # SLM docks
+        self.slm_dock = Dock("SLM", size=(1, 1), closable=False)
+        self.area.addDock(self.slm_dock, "above", self.raster_scan_display)
+
+        # camera display docks
+        self.camera_display_1 = Dock("Camera 1", size=(1, 1), closable=False)
+        self.camera_display_2 = Dock("Camera 2", size=(1, 1), closable=False)
+
+        # History dock
+        self.history_display_dock = Dock("History", size=(1, 1), closable=False)
+        self.area.addDock(self.history_display_dock, "right")
+        self.history_settings_dock = Dock("History Settings", size=(1, 1), closable=False)
+        self.area.addDock(self.history_settings_dock, "right")
+
+        # ------------------ ADD PANELS TO DOCK -----------------------------
+        # add general control to dock
+        self.general_dock.addWidget(GeneralControl(self.vo, self.db_ctrl))
+
+        # add spectra display panel to dock
+        splash.showMessage("Creating panels...(Spectra display)")
         self.spectra_panel = SpectrometerDisplay()
         self.spectra_display.addWidget(self.spectra_panel)
 
-        # RASTER SCAN PANEL/ STAGE CONTROL PANEL
-        splash.showMessage("Creating panels... (Raster scan)")
-        self.raster_scan_disp = Dock("Raster scan", size=(1, 1), closable=False)
-        self.area.addDock(self.raster_scan_disp, "bottom", self.spectra_display)
-        self.raster_scan_panel = StageControl()
-        shrd.__STAGE_CONTROL__ = self.raster_scan_panel
-        self.raster_scan_disp.addWidget(self.raster_scan_panel)
-
-        # TIME SERIES PANELS
-        splash.showMessage("Creating panels... (Kinetic)")
-        self.time_series_disp = Dock("Time series", size=(1, 1), closable=False)
-        self.area.addDock(self.time_series_disp, "above", self.raster_scan_disp)
+        # add time series panel to dock
+        splash.showMessage("Creating panels... (Time series)")
         self.time_series_panel = TimeSeries()
         self.time_series_disp.addWidget(self.time_series_panel)
 
-        # SPECTROMETER CONTROL PANEL
+        # add spectrometer control panel to dock
         splash.showMessage("Creating panels... (Spectrometer)")
-        self.spectrometer_dock = Dock("Spectrometer", size=(1, 2), closable=False)
-        self.area.addDock(self.spectrometer_dock, 'bottom', self.positioning_dock)
-        self.spectrometer = SpectrometerControl(self.spectra_panel, self.time_series_panel)
-        shrd.__SPECTROMETER__ = self.spectrometer
-        self.spectrometer_dock.addWidget(self.spectrometer)
+        self.spectrometer_ctrl = SpectrometerControl(self.spectra_panel, self.time_series_panel,
+                                                     self.storage_ctrl, self.vo, self.status_bar)
+        self.spectrometer_dock.addWidget(self.spectrometer_ctrl)
 
-        # SLM CONTROL PANEL
+        # add positioning control panel to dock
+        splash.showMessage("Creating panels...(Positioning)")
+        self.positioning_ctrl = Positioning(self.spectrometer_ctrl)
+        self.positioning_dock.addWidget(self.positioning_ctrl)
+
+        # add camera panels to dock
+        splash.showMessage("Creating panels... (Camera)")
+        self.area.addDock(self.camera_display_1, "bottom", self.raster_scan_display)
+        self.camera1 = ThorCam()
+        self.camera_display_1.addWidget(self.camera1)
+        self.area.addDock(self.camera_display_2, "above", self.camera_display_1)
+
+        # add raster scan panel to dock
+        splash.showMessage("Creating panels... (Raster scan)")
+        self.stage_ctrl = StageControl(self.spectrometer_ctrl, self.positioning_ctrl, self.camera1)
+        self.raster_scan_display.addWidget(self.stage_ctrl)
+        # now make spectrometer aware of the initialised instance
+        self.spectrometer_ctrl.init_stage_interaction(self.stage_ctrl)
+
+        # add slm control panels to dock
         splash.showMessage("Creating panels... (SLM)")
-        self.slm_dock = Dock("SLM", size=(1, 1), closable=False)
-        self.area.addDock(self.slm_dock, "above", self.raster_scan_disp)
         self.slm_control = SLMControl()
         self.slm_dock.addWidget(self.slm_control)
 
-        # CAMERA DISPLAY PANELS
-        splash.showMessage("Creating panels... (Camera)")
-        self.camera_display_1 = Dock("Camera 1", size=(1, 1), closable=False)
-        self.area.addDock(self.camera_display_1, "bottom", self.raster_scan_disp)
-        shrd.__CAM1__ = ThorCam()
-        self.camera_display_1.addWidget(shrd.__CAM1__)
-        self.camera_display_2 = Dock("Camera 2", size=(1, 1), closable=False)
-        self.area.addDock(self.camera_display_2, "above", self.camera_display_1)
-
-        # HISTORY PANEL
+        # add history control to dock
         splash.showMessage("Creating panels... (History)")
-        self.spectra_history = Dock("Spectra history", size=(1, 1), closable=False)
-        self.area.addDock(self.spectra_history, "right")
-        shrd.__HISTORY_DISPLAY__ = HistoryDisplay()
-        self.spectra_history.addWidget(shrd.__HISTORY_DISPLAY__)
+        self.history_display = HistoryDisplay()
+        self.history_settings = HistorySettings(self.db_ctrl, self.storage_ctrl, self.history_display)
+        self.history_display_dock.addWidget(self.history_display)
+        self.history_settings_dock.addWidget(self.history_settings)
+
+
         # ------------------------------------------------END GUI Initialisation ---------------------------
 
-        self.dock_configuration = None      # dock configuration if stored
+        # load dock configuration
+        self.dock_configuration = None
         self.load_config()
 
         if self.dock_configuration is not None:
             self.area.restoreState(self.dock_configuration)
+
+        # style sheets
 
         #sshFile = "./darkorange.stylesheet"
         #with open(sshFile, "r") as fh:
         #    self.setStyleSheet(fh.read())
         #self.win.showFullScreen()
         # initiate database instance
-        if shrd.__DB__ is None:     # init if controller has not been instanced yet.
-            shrd.__DB__ = dbctrl.DatabaseControl()
-        # initiate storage instance
-        if shrd.__STORAGE__ is None:
-            shrd.__STORAGE__ = storage.StorageControl()
 
         splash.finish(self.win)
         self.win.show()

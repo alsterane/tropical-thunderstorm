@@ -1,12 +1,12 @@
 __author__ = 'df-setup-basement'
 
+"""
+Contains globally used parameters such as current experiment name, etc.
+"""
+
 # root structure
 __DB_PATH__ = None
 __DATA_ROOT__ = None
-
-# database and storage control instances
-__DB__ = None
-__STORAGE__ = None
 
 # stage and spectrometer
 __STAGE__ = None

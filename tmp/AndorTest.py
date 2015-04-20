@@ -28,7 +28,7 @@ andor.set_exposure_time(.3)
 andor.start_acquisition()
 
 data = []
-data = andor.get_acquired_data(data)
+data = andor.get_acquired_data_fast(data)
 
 print np.shape(data)
 plt.plot(data)
