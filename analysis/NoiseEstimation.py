@@ -63,7 +63,7 @@ def dark_noise():
             data = []
             andor.start_acquisition()
             andor.wait_for_acquisition()
-            andor.get_acquired_data(data)
+            andor.get_acquired_data_fast(data)
             for p in range(np.size(data, 0)):
                 counts_wl[p] += float(data[p])/average
             av += np.average(data)
