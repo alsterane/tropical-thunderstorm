@@ -85,6 +85,10 @@ class AndorIdus():
         self._ReadMode = None
         self._bit_depths = None
         self._cycle_time = None
+
+        self._img_mode_width = None     # this is the width of a fully vertically binned image scan (effective width)
+        self._img_mode_vertical_binning = None
+
         if self.set_acquisition_mode(1):
             self._AcquisitionMode = 1
 
@@ -683,6 +687,31 @@ class AndorIdus():
         self._imageArray = img_array[:]
         return self._imageArray
 
+    def get_acquired_data_fast(self):
+        """
+        Gets the acquired data
+        :param img_array: Fixed widht array to store data.
+        :return: img_array: Array with retrieved data.
+        """
+        if self._ReadMode == 0:     # single scan with FVB
+            dim = self._width
+            c_img_array = c_int * dim
+            c_img = c_img_array()
+            self._dll.GetAcquiredData(byref(c_img), dim)
+            img_array = np.frombuffer(c_img, dtype=c_int)
+            return img_array
+        elif self._ReadMode == 4:   # image mode
+            dim = self._img_mode_width  # width of the returned vb image
+            c_img_array = c_int * dim
+            c_img = c_img_array()
+            self._dll.GetAcquiredData(byref(c_img), dim)
+            img_array = np.frombuffer(c_img, dtype=c_int)
+            #img_array /= float(self._img_mode_vertical_binning)     # divide by number of pixels
+            return img_array
+        else:
+            print("Incompatible read mode.")
+            return 0
+
     def get_fast_data(self):
         """
         Gets data at increased rate. (Not really faster as of yet).
@@ -721,10 +750,14 @@ class AndorIdus():
         :param img_array: Fixed widht array to store data.
         :return: img_array: Array with retrieved data.
         """
-        if self._ReadMode != 0:     # single scan with FVB
-            print("Incompatible read mode.")
-        else:
+        if self._ReadMode == 0:     # single scan with FVB
             dim = self._width
+        elif self._ReadMode == 4:
+            dim = self._img_mode_width
+        else:
+            print("incompatible read mode")
+            return 0
+        print("dimension "+ str(dim))
         if av == 1:
             c_img_array = c_int * dim
             c_img = c_img_array()
@@ -806,6 +839,16 @@ class AndorIdus():
         error = self._dll.FreeInternalMemory()
         self.status("Internal memory freed", error)
 
+    def set_vb_image(self, hbin, hstart, hend, vstart, vend):
+        """
+        vertically binned image
+        :return:
+        """
+        print ("Setting vertical binning image dimensions.")
+        self.set_image(hbin, vend-vstart+1, hstart, hend, vstart, vend)
+        self._img_mode_width = (hend - hstart + 1)/hbin
+        self._img_mode_vertical_binning = vend-vstart+1
+
     def set_image(self, hbin, vbin, hstart, hend, vstart, vend):
         """
         specifiy binning and domain of image
@@ -817,7 +860,7 @@ class AndorIdus():
         :param vend: vertical end point
         :return:
         """
-        error = self._dll.SetImage(hbin, vbin, hstart, hend, vstart, vend)
+        error = self._dll.SetImage(c_int(hbin), c_int(vbin), c_int(hstart), c_int(hend), c_int(vstart), c_int(vend))
 
     def set_shutter(self, typ, mode, closingtime, openingtime):
         """
